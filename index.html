@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vanh &amp; Hiếu — 365 ngày</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Dancing+Script:wght@500;600;700&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root{
+  --cream:        #f7efe3;
+  --ivory:        #fffcf6;
+  --blush:        #f0d9d6;
+  --wine:         #6e2430;
+  --wine-deep:    #3a0f18;
+  --wine-black:   #200a0e;
+  --gold:         #c79a55;
+  --gold-soft:    #e3c98f;
+  --ink:          #3c2c26;
+  --ink-soft:     #6b5750;
+
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --hand:  'Dancing Script', cursive;
+  --body:  'Be Vietnam Pro', 'Segoe UI', sans-serif;
+
+  --ease-soft: cubic-bezier(.22,.61,.36,1);
+  --ease-out:  cubic-bezier(.16,1,.3,1);
+}
+
+*{ box-sizing: border-box; }
+html,body{
+  margin:0; padding:0; width:100%; height:100%;
+  background: var(--wine-black);
+  overflow-x: hidden;
+}
+body{
+  font-family: var(--body);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3{ font-family: var(--serif); margin:0; font-weight:600; }
+p{ margin:0; }
+button{ font-family: var(--body); border:none; background:none; cursor:pointer; }
+::selection{ background: var(--wine); color: var(--ivory); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ============================================================
+   GLOBAL PARTICLE CANVAS (dust / hearts / stars, ambient)
+   ============================================================ */
+#ambient-canvas{
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ============================================================
+   SCENES — full-viewport stages, one visible at a time
+   ============================================================ */
+.scene{
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6vh 5vw;
+  overflow: hidden;
+}
+.scene.is-active{ display:flex; }
+
+.scene-fade-in{ animation: sceneFadeIn 1.4s var(--ease-out) both; }
+@keyframes sceneFadeIn{
+  from{ opacity:0; filter: blur(10px); transform: scale(1.02); }
+  to{   opacity:1; filter: blur(0);    transform: scale(1); }
+}
+.scene-fade-out{ animation: sceneFadeOut .9s var(--ease-soft) both; }
+@keyframes sceneFadeOut{
+  from{ opacity:1; filter: blur(0); }
+  to{   opacity:0; filter: blur(14px); }
+}
+
+/* ------------------------------------------------------------
+   SCENE 1 — THE GIFT BOX
+   ------------------------------------------------------------ */
+#scene-gift{
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 38%, rgba(199,154,85,.14), transparent 60%),
+    radial-gradient(ellipse 120% 90% at 50% 100%, var(--wine-deep), var(--wine-black) 70%);
+}
+.gift-eyebrow{
+  font-family: var(--hand);
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: var(--gold-soft);
+  letter-spacing: .02em;
+  opacity: 0;
+  animation: driftUp 1.4s var(--ease-out) .3s both;
+}
+.gift-stage{
+  position: relative;
+  width: min(74vw, 340px);
+  aspect-ratio: 1 / 1.02;
+  margin: 4.2vh 0 3.4vh;
+  perspective: 1400px;
+}
+.gift-ground-shadow{
+  position:absolute; left:50%; bottom:-2%; translate:-50% 0;
+  width: 66%; height: 12%;
+  background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 72%);
+  filter: blur(3px);
+  z-index: 0;
+}
+.gift-box{
+  position: absolute; inset: 0;
+  display:flex; align-items:flex-end; justify-content:center;
+  transform-style: preserve-3d;
+  animation: boxFloat 5s ease-in-out infinite;
+}
+@keyframes boxFloat{
+  0%,100%{ transform: translateY(0) rotateZ(0deg); }
+  50%{ transform: translateY(-10px) rotateZ(-1.2deg); }
+}
+.box-base{
+  position:absolute; bottom: 0; left: 50%; translate: -50% 0;
+  width: 80%; height: 56%;
+  background: linear-gradient(155deg, #7c2a37 0%, var(--wine) 45%, #4a1420 100%);
+  border-radius: 5px 5px 16px 16px;
+  box-shadow:
+    0 34px 60px -18px rgba(0,0,0,.6),
+    inset 0 2px 0 rgba(255,255,255,.12),
+    inset 0 -14px 20px -6px rgba(0,0,0,.4);
+  overflow: hidden;
+  z-index: 1;
+}
+.box-base::before{ /* wrapping-paper dot pattern */
+  content:''; position:absolute; inset:0;
+  background-image: radial-gradient(circle, rgba(227,201,143,.4) 1px, transparent 1.7px);
+  background-size: 15px 15px;
+  opacity:.45;
+  mix-blend-mode: overlay;
+}
+.box-base::after{ /* top sheen */
+  content:''; position:absolute; inset:0 0 auto 0; height: 34%;
+  background: linear-gradient(180deg, rgba(255,255,255,.2), transparent);
+}
+.ribbon-h{
+  position:absolute; left:0; right:0; top: 34%; height: 17%;
+  background: linear-gradient(180deg, #f3ddac 0%, var(--gold) 48%, #a97f3f 100%);
+  box-shadow: inset 0 2px 3px rgba(255,255,255,.35), inset 0 -3px 5px rgba(0,0,0,.22);
+  z-index: 2;
+}
+.box-lid{
+  position:absolute; left: 50%; translate: -50% 0;
+  bottom: 54%;
+  width: 93%; height: 21%;
+  background: linear-gradient(155deg, #923643 0%, var(--wine) 55%, #551821 100%);
+  border-radius: 8px 8px 4px 4px;
+  box-shadow: 0 16px 30px -12px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.22);
+  transform-origin: 10% 100%;
+  transition: transform 1.1s var(--ease-out), opacity .8s ease .5s;
+  overflow: hidden;
+  z-index: 4;
+}
+.box-lid::before{ /* sheen */
+  content:''; position:absolute; inset:0 0 auto 0; height: 46%;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), transparent);
+}
+.ribbon-v{
+  position:absolute; left: 50%; translate: -50% 0;
+  bottom: 0; height: 56%;
+  width: 14%;
+  background: linear-gradient(90deg, #a97f3f 0%, var(--gold) 25%, #f3ddac 50%, var(--gold) 75%, #a97f3f 100%);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08) inset;
+  z-index: 3;
+}
+.ribbon-v.on-lid{ bottom: 54%; height: 21%; z-index: 5; }
+.ribbon-bow{
+  position:absolute; left: 50%; bottom: 53%; translate: -50% 40%;
+  width: 46%; z-index: 6;
+  transform-origin: 50% 55%;
+  transition: transform 1s var(--ease-out), opacity .7s ease .2s;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,.35));
+}
+.ribbon-bow svg{ width:100%; height:auto; display:block; overflow: visible; }
+.gift-glow{
+  position:absolute; left:50%; bottom:54%; translate:-50% 40%;
+  width: 130%; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(227,201,143,.9) 0%, rgba(227,201,143,.35) 35%, transparent 70%);
+  opacity: 0; pointer-events:none; z-index: 2;
+  filter: blur(2px);
+}
+.gift-sparkle{
+  position:absolute; color: var(--gold-soft);
+  font-size: 1.1rem; opacity: .75; z-index: 1;
+  animation: sparkleFloat 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.gift-sparkle.s1{ top: 6%;  left: 4%;  font-size: 1.4rem; animation-delay: 0s; }
+.gift-sparkle.s2{ top: 18%; right: 2%; font-size: 1rem;   animation-delay: 1.1s; }
+.gift-sparkle.s3{ bottom: 14%; left: -2%; font-size: 1.2rem; animation-delay: 2.1s; }
+.gift-sparkle.s4{ bottom: 4%; right: 6%; font-size: 1.5rem; color: var(--blush); animation-delay: 3s; }
+@keyframes sparkleFloat{
+  0%,100%{ transform: translateY(0) rotate(0deg) scale(1); opacity:.55; }
+  50%{ transform: translateY(-14px) rotate(14deg) scale(1.15); opacity:1; }
+}
+
+/* opened state */
+.gift-stage.is-open .box-lid{ transform: translateY(-90px) rotate(-38deg); opacity: 0; }
+.gift-stage.is-open .ribbon-bow{ opacity:0; transform: translateY(-40px) scale(.6) rotate(12deg); }
+.gift-stage.is-open .ribbon-v.on-lid{ opacity: 0; transition: opacity .4s ease; }
+.gift-stage.is-open .gift-glow{ animation: glowBurst 1.4s var(--ease-out) forwards; }
+@keyframes glowBurst{
+  0%{ opacity:0; scale:.4; }
+  35%{ opacity:1; scale:1.15; }
+  100%{ opacity:0; scale:1.9; }
+}
+
+.gift-caption{
+  font-size: clamp(.92rem, 2.4vw, 1.05rem);
+  color: rgba(255,251,243,.72);
+  font-style: italic;
+  max-width: 30ch;
+  text-align:center;
+  opacity:0;
+  animation: driftUp 1.4s var(--ease-out) .55s both;
+}
+.btn-open{
+  margin-top: 4vh;
+  padding: .95em 2.3em;
+  border-radius: 999px;
+  font-size: 1rem;
+  letter-spacing: .02em;
+  color: var(--wine-deep);
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+  box-shadow: 0 14px 30px -12px rgba(199,154,85,.55);
+  opacity:0;
+  animation: driftUp 1.4s var(--ease-out) .8s both;
+  transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out);
+}
+.btn-open:hover{ transform: translateY(-3px); box-shadow: 0 20px 36px -12px rgba(199,154,85,.7); }
+.btn-open:active{ transform: translateY(0) scale(.97); }
+.btn-open.is-hidden{ opacity:0; pointer-events:none; transition: opacity .5s ease; }
+
+@keyframes driftUp{
+  from{ opacity:0; transform: translateY(14px); }
+  to{   opacity:1; transform: translateY(0); }
+}
+
+/* subtle shake before opening */
+.gift-stage.is-shaking .gift-box{ animation: boxShake .55s ease; }
+@keyframes boxShake{
+  0%,100%{ transform: translateX(0) rotateZ(0); }
+  20%{ transform: translateX(-6px) rotateZ(-1.5deg); }
+  40%{ transform: translateX(5px) rotateZ(1.4deg); }
+  60%{ transform: translateX(-4px) rotateZ(-1deg); }
+  80%{ transform: translateX(3px) rotateZ(.8deg); }
+}
+
+/* balloons released when the gift box opens — position driven by JS/rAF
+   for a smooth, continuous sway (see spawnBalloons) rather than stepped
+   CSS keyframes */
+.balloon{
+  position: fixed; left: 0; top: 0; z-index: 65;
+  border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
+  background: var(--bColor);
+  box-shadow:
+    inset -7px -10px 16px rgba(0,0,0,.18),
+    inset 7px 7px 12px rgba(255,255,255,.3),
+    0 10px 18px -8px rgba(0,0,0,.3);
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.balloon::before{ /* knot */
+  content:''; position:absolute; left:50%; bottom:-7px; translate:-50% 0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 9px solid var(--bColor);
+}
+.balloon::after{ /* string */
+  content:''; position:absolute; left:50%; bottom:-52px; translate:-50% 0;
+  width: 1.4px; height: 48px;
+  background: rgba(60,44,38,.4);
+}
+
+/* ------------------------------------------------------------
+   SCENE 2 — PHOTOS
+   ------------------------------------------------------------ */
+#scene-photos{
+  background: linear-gradient(180deg, var(--cream) 0%, #f2e6d4 100%);
+  min-height: 100svh;
+  padding-top: 9vh;
+  padding-bottom: 8vh;
+}
+.section-head{ text-align:center; margin-bottom: 5vh; }
+.section-head h2{
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  color: var(--wine);
+}
+.section-head .sub{
+  display:block; margin-top: .6em;
+  font-style: italic; color: var(--ink-soft);
+  font-size: 1rem;
+}
+.polaroid-field{
+  position: relative;
+  width: min(100%, 1140px);
+  display: flex; flex-wrap: wrap;
+  align-items: flex-start; justify-content: center;
+  gap: 6.5vh 4.5vw;
+  padding: 2vh 0 3vh;
+}
+.polaroid{
+  --rot: 0deg;
+  width: clamp(140px, 20vw, 200px);
+  background: var(--ivory);
+  padding: 10px 10px 34px;
+  border-radius: 3px;
+  box-shadow: 0 18px 30px -16px rgba(58,15,24,.35), 0 2px 4px rgba(58,15,24,.08);
+  transform: rotate(var(--rot)) translateY(40px) scale(.85);
+  opacity: 0;
+  cursor: pointer;
+  transition: transform .5s var(--ease-out), box-shadow .35s ease, z-index 0s;
+  will-change: transform;
+}
+.polaroid .frame{ animation: frameIdleFloat 4.6s ease-in-out infinite; animation-delay: calc(var(--i) * .35s); }
+@keyframes frameIdleFloat{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-5px); }
+}
+.polaroid:hover .frame{ animation-play-state: paused; }
+.polaroid-field.is-visible .polaroid{
+  animation: polaroidDrop .85s var(--ease-out) both;
+  animation-delay: calc(var(--i) * .16s);
+}
+@keyframes polaroidDrop{
+  from{ opacity:0; transform: rotate(var(--rot)) translateY(60px) scale(.8); }
+  to{   opacity:1; transform: rotate(var(--rot)) translateY(0) scale(1); }
+}
+.polaroid:hover{
+  transform: rotate(0deg) translateY(-6px) scale(1.06);
+  box-shadow: 0 26px 40px -16px rgba(58,15,24,.4);
+  z-index: 20;
+}
+.polaroid .frame{
+  position:relative; width:100%; aspect-ratio: 1/1.05;
+  overflow:hidden; background: var(--blush);
+  border-radius: 1px;
+}
+.polaroid img{
+  width:100%; height:100%; object-fit: cover; display:block;
+}
+.polaroid .placeholder-art{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--hand); font-size: 2rem; color: var(--wine);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(199,154,85,.35), transparent 55%),
+    linear-gradient(155deg, #f6e3d8, var(--blush));
+}
+
+/* decorative washi tape / pushpin on each polaroid */
+.polaroid{ overflow: visible; }
+.deco-tape{
+  position:absolute; top:-13px; left:50%;
+  width: 68px; height: 25px;
+  transform: translateX(-50%) rotate(var(--tape-rot, -6deg));
+  background: var(--tape-grad);
+  opacity: .82;
+  clip-path: polygon(3% 6%,97% 0%,100% 22%,96% 45%,100% 68%,97% 100%,4% 96%,0% 74%,3% 48%,0% 26%);
+  box-shadow: 0 4px 7px -2px rgba(58,15,24,.28);
+  z-index: 3;
+}
+.deco-tape::after{ /* soft sheen so the tape reads as semi-translucent */
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
+  mix-blend-mode: soft-light;
+}
+.deco-pin{
+  position:absolute; top:-15px; left:50%;
+  transform: translateX(-50%) rotate(var(--pin-rot, 0deg));
+  width: 26px; height: 34px;
+  z-index: 3;
+  filter: drop-shadow(0 5px 5px rgba(58,15,24,.3));
+}
+
+/* enlarge overlay */
+#photo-overlay{
+  position: fixed; inset:0; z-index: 60;
+  background: rgba(32,10,14,.82);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition: opacity .35s ease;
+  padding: 6vh 6vw;
+}
+#photo-overlay.is-active{ opacity:1; pointer-events:auto; }
+#photo-overlay .enlarged{
+  max-width: min(86vw, 520px);
+  background: var(--ivory);
+  padding: 16px 16px 40px;
+  border-radius: 3px;
+  transform: scale(.9); transition: transform .4s var(--ease-out);
+  box-shadow: 0 40px 80px -20px rgba(0,0,0,.6);
+}
+#photo-overlay.is-active .enlarged{ transform: scale(1); }
+#photo-overlay .enlarged img,
+#photo-overlay .enlarged .placeholder-art{ width:100%; display:block; aspect-ratio: 1/1.05; object-fit:cover; }
+
+/* magnifying-glass zoom cue, shown briefly on click before the overlay opens */
+.lens{
+  position: fixed; z-index: 70;
+  width: 86px; height: 86px;
+  border-radius: 50%;
+  border: 5px solid var(--gold-soft);
+  box-shadow:
+    0 0 0 3px rgba(58,15,24,.28) inset,
+    0 18px 40px -12px rgba(0,0,0,.55);
+  background-color: var(--blush);
+  background-repeat: no-repeat;
+  background-size: 320%;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--hand); font-size: 1.6rem; color: var(--wine);
+}
+.lens::after{ /* handle */
+  content:''; position:absolute;
+  width: 34px; height: 9px; border-radius: 5px;
+  background: var(--gold-soft);
+  right: -21px; bottom: -10px;
+  transform: rotate(45deg); transform-origin: left center;
+  box-shadow: 0 2px 6px -2px rgba(0,0,0,.4);
+}
+.lens.is-growing{
+  transition: left .5s var(--ease-out), top .5s var(--ease-out),
+              width .5s var(--ease-out), height .5s var(--ease-out),
+              opacity .3s ease .25s;
+  opacity: 0;
+}
+
+.btn-next{
+  margin-top: 3vh;
+  font-family: var(--hand);
+  font-size: 1.35rem;
+  color: var(--wine);
+  padding: .3em .2em;
+  position: relative;
+  opacity:0;
+}
+.btn-next.is-visible{ animation: driftUp 1s var(--ease-out) both; }
+.btn-next::after{
+  content:''; position:absolute; left:0; right:0; bottom: -2px; height:1px;
+  background: var(--wine); transform: scaleX(0); transform-origin: left;
+  transition: transform .35s ease;
+}
+.btn-next:hover::after{ transform: scaleX(1); }
+
+/* ------------------------------------------------------------
+   SCENE 3 — THE LETTER
+   ------------------------------------------------------------ */
+#scene-letter{
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(199,154,85,.10), transparent 60%),
+    linear-gradient(180deg, #efe1cd 0%, var(--cream) 100%);
+  min-height: 100svh;
+}
+.envelope-wrap{ cursor:pointer; text-align:center; position: relative; }
+.envelope-glow{
+  position:absolute; left:50%; top:50%; translate:-50% -50%;
+  width: 140%; aspect-ratio: 1; border-radius:50%;
+  background: radial-gradient(circle, rgba(227,201,143,.35), transparent 65%);
+  animation: envGlowPulse 3.6s ease-in-out infinite;
+  pointer-events:none; z-index:0;
+}
+@keyframes envGlowPulse{
+  0%,100%{ opacity:.5; transform: translate(-50%,-50%) scale(.94); }
+  50%{ opacity:1; transform: translate(-50%,-50%) scale(1.04); }
+}
+.envelope{
+  position:relative; z-index:1;
+  width: min(80vw, 340px);
+  aspect-ratio: 3/2;
+  margin: 0 auto;
+  perspective: 900px;
+  transition: transform .4s var(--ease-out);
+}
+.envelope-wrap:hover .envelope{ transform: translateY(-4px); }
+.env-body{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.5), transparent 40%),
+    linear-gradient(155deg, #f7ead6 0%, #e9d3ac 55%, #ddc292 100%);
+  border-radius: 6px;
+  box-shadow:
+    0 30px 55px -20px rgba(58,15,24,.4),
+    inset 0 0 0 1px rgba(255,255,255,.5),
+    inset 0 -14px 22px -16px rgba(120,70,30,.25);
+  overflow: hidden;
+}
+.env-body::before,
+.env-body::after{
+  content:''; position:absolute; top:0; bottom:0; width:52%;
+}
+.env-body::before{
+  left:0;
+  background: linear-gradient(120deg, rgba(255,255,255,.45), transparent 65%);
+  clip-path: polygon(0 0, 100% 46%, 0 100%);
+}
+.env-body::after{
+  right:0;
+  background: linear-gradient(240deg, rgba(120,70,30,.14), transparent 65%);
+  clip-path: polygon(100% 0, 0 46%, 100% 100%);
+}
+.env-bottom-fold{
+  position:absolute; left:0; right:0; bottom:0; height: 46%;
+  clip-path: polygon(0 100%, 100% 100%, 100% 30%, 50% 62%, 0 30%);
+  background: linear-gradient(0deg, rgba(120,70,30,.16), transparent 75%);
+  z-index: 1; pointer-events:none;
+}
+.env-flap{
+  position:absolute; top:0; left:0; right:0; height: 60%;
+  background: linear-gradient(160deg, #efdcbb 0%, #ddbf8e 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 72%);
+  transform-origin: top center;
+  transition: transform 1.1s var(--ease-out);
+  box-shadow: 0 8px 16px -8px rgba(58,15,24,.28);
+  z-index: 3;
+}
+.env-flap::after{ /* inner shade near the fold point for depth */
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(160deg, rgba(255,255,255,.35), transparent 55%);
+  clip-path: inherit;
+}
+.env-shadow-flap{
+  position:absolute; top:0; left:0; right:0; height: 60%;
+  clip-path: polygon(0 0, 100% 0, 50% 72%);
+  background: linear-gradient(160deg, rgba(58,15,24,.06), rgba(58,15,24,.16));
+  opacity:0; transition: opacity .7s ease;
+  z-index: 2;
+}
+.env-seal{
+  position:absolute; left:50%; top: 42%; translate:-50% -50%;
+  width: 50px; height:46px;
+  border-radius: 50% 48% 53% 47% / 54% 46% 55% 45%;
+  background: radial-gradient(circle at 32% 26%, #a3323f, var(--wine) 60%, var(--wine-deep) 100%);
+  display:flex; align-items:center; justify-content:center;
+  color: var(--gold-soft); font-size: 1.15rem;
+  box-shadow:
+    0 7px 14px -5px rgba(0,0,0,.45),
+    inset 0 2px 3px rgba(255,255,255,.25),
+    inset 0 -4px 6px rgba(0,0,0,.35);
+  z-index: 5;
+  transition: transform .5s var(--ease-out), opacity .5s ease;
+}
+.env-title{
+  font-family: var(--hand); font-size: 1.5rem; color: var(--wine);
+  margin-top: 3.4vh; position:relative; z-index:1;
+}
+.env-sub{
+  display:block; margin-top:.5em; font-style: italic; color: var(--ink-soft); font-size: .92rem;
+  position:relative; z-index:1;
+}
+.envelope-wrap.is-open .env-flap{ transform: rotateX(180deg); }
+.envelope-wrap.is-open .env-shadow-flap{ opacity:1; }
+.envelope-wrap.is-open .env-seal{ opacity:0; transform: translate(-50%,-50%) scale(.4); }
+
+.letter-frame{
+  position: relative;
+  width: min(88vw, 560px);
+  margin: 4vh auto 0;
+  transform: rotate(-.5deg);
+}
+.letter-paper{
+  position: relative;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: clamp(38px,6vw,64px) clamp(28px,6vw,54px) clamp(30px,5vw,46px);
+  background: linear-gradient(175deg, #fffefb 0%, #fdf7ea 55%, #f9f0dc 100%);
+  box-shadow:
+    0 36px 70px -26px rgba(58,15,24,.42),
+    0 3px 10px -4px rgba(58,15,24,.15);
+  border-radius: 3px;
+  opacity: 0; transform: translateY(26px) scale(.97);
+  transition: opacity .9s var(--ease-out), transform .9s var(--ease-out);
+}
+/* soft watercolour blooms in the corners, instead of harsh grain */
+.letter-paper::before{
+  content:'';
+  position:absolute; inset:0; border-radius: inherit;
+  background:
+    radial-gradient(ellipse 46% 30% at 4% 2%,  rgba(199,154,85,.14), transparent 70%),
+    radial-gradient(ellipse 40% 28% at 98% 6%, rgba(110,36,48,.07),  transparent 70%),
+    radial-gradient(ellipse 50% 34% at 96% 98%,rgba(199,154,85,.10), transparent 70%),
+    radial-gradient(ellipse 40% 26% at 2% 96%, rgba(110,36,48,.06),  transparent 70%);
+  pointer-events:none;
+}
+/* slim gilded frame, inset from the edge like a keepsake card */
+.letter-paper::after{
+  content:''; position:absolute; inset: 12px; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(199,154,85,.38);
+  pointer-events:none;
+}
+.letter-paper.is-visible{ opacity:1; transform: translateY(0) scale(1); }
+.letter-paper::-webkit-scrollbar{ width: 5px; }
+.letter-paper::-webkit-scrollbar-thumb{ background: rgba(199,154,85,.45); border-radius: 4px; }
+.letter-paper::-webkit-scrollbar-track{ background: transparent; }
+
+/* tiny wax seal resting on top of the paper, half-overlapping the edge */
+.letter-seal-chip{
+  position:absolute; top:-20px; left:50%; translate:-50% 0;
+  width: 42px; height: 38px; z-index: 2;
+  filter: drop-shadow(0 6px 8px rgba(58,15,24,.35));
+}
+
+.letter-flourish{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin: 6px 0 1.6em;
+  color: var(--gold);
+}
+.letter-flourish svg{ width: 84px; height:auto; }
+.letter-flourish.bottom{ margin: 1.8em 0 0; }
+
+.letter-paper p{
+  position: relative;
+  font-size: clamp(.98rem, 2vw, 1.07rem);
+  line-height: 1.95;
+  color: var(--ink);
+  margin-bottom: 1.15em;
+  letter-spacing: .002em;
+}
+.letter-paper p.first-para::first-letter{
+  font-family: var(--serif);
+  font-size: 2.6em;
+  font-weight: 600;
+  color: var(--wine);
+  float: left;
+  line-height: .78;
+  padding: .06em .07em 0 0;
+}
+.letter-paper .sign{
+  font-family: var(--hand);
+  font-size: 1.7rem; color: var(--wine);
+  text-align: right; margin-top: .2em;
+  position: relative;
+}
+.letter-scroll-hint{
+  text-align:center; font-size:.8rem; color: var(--ink-soft); opacity:.6; margin-top: 1.4vh;
+  transition: opacity .4s ease;
+}
+
+/* ------------------------------------------------------------
+   SCENE 4 — FINALE
+   ------------------------------------------------------------ */
+#scene-finale{
+  background: var(--wine-black);
+  min-height: 100svh;
+}
+.finale-dot{
+  position:absolute; left:50%; top:50%; translate:-50% -50%;
+  width: 6px; height:6px; border-radius:50%;
+  background: var(--gold-soft);
+  box-shadow: 0 0 20px 6px rgba(227,201,143,.7);
+  animation: dotPulse 2.2s ease-in-out infinite;
+}
+@keyframes dotPulse{
+  0%,100%{ opacity:.55; scale:1; }
+  50%{ opacity:1; scale:1.6; }
+}
+.finale-heart{
+  opacity:0; transform: scale(.3);
+  filter: drop-shadow(0 0 26px rgba(227,201,143,.6));
+}
+.finale-heart.is-visible{
+  animation: heartReveal 1.6s var(--ease-out) forwards;
+}
+@keyframes heartReveal{
+  0%{ opacity:0; transform: scale(.2); }
+  60%{ opacity:1; transform: scale(1.12); }
+  100%{ opacity:1; transform: scale(1); }
+}
+.finale-title{
+  margin-top: 4.5vh;
+  font-family: var(--serif);
+  font-size: clamp(2.1rem, 7vw, 3.6rem);
+  letter-spacing: .04em;
+  color: var(--ivory);
+  text-align:center;
+  opacity:0;
+}
+.finale-title.is-visible{ animation: driftUp 1.3s var(--ease-out) both; }
+.finale-sub{
+  margin-top: 1.6vh;
+  font-family: var(--hand);
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  color: var(--gold-soft);
+  opacity:0;
+}
+.finale-sub.is-visible{ animation: driftUp 1.3s var(--ease-out) both; }
+.finale-days{
+  margin-top: .8vh;
+  font-style: italic; color: rgba(255,251,243,.55); font-size: .95rem;
+  opacity:0;
+}
+.finale-days.is-visible{ animation: driftUp 1.3s var(--ease-out) both; }
+.finale-next{
+  margin-top: 5.5vh;
+  font-family: var(--hand);
+  font-size: 1.3rem;
+  color: rgba(255,251,243,.85);
+  opacity:0;
+  border-bottom: 1px solid rgba(227,201,143,.5);
+  padding-bottom: 2px;
+}
+.finale-next.is-visible{ animation: driftUp 1.4s var(--ease-out) both; }
+
+.finale-star{
+  position:absolute; color: var(--gold-soft); opacity:0;
+  animation: starTwinkle 2.6s ease-in-out infinite;
+}
+.finale-star.is-visible{ animation: starTwinkle 2.6s ease-in-out infinite, driftUp .8s var(--ease-out) both; }
+@keyframes starTwinkle{
+  0%,100%{ opacity:.2; transform: scale(.8); }
+  50%{ opacity:.9; transform: scale(1.15); }
+}
+
+.btn-restart{
+  margin-top: 3.4vh;
+  padding: .8em 1.9em;
+  border-radius: 999px;
+  font-size: .92rem;
+  letter-spacing: .03em;
+  color: var(--ivory);
+  background: transparent;
+  border: 1px solid rgba(255,251,243,.4);
+  opacity: 0;
+  transition: background .3s ease, border-color .3s ease, transform .3s ease;
+}
+.btn-restart.is-visible{ animation: driftUp 1.4s var(--ease-out) both; }
+.btn-restart:hover{
+  background: rgba(255,253,246,.1);
+  border-color: var(--gold-soft);
+  transform: translateY(-2px);
+}
+
+/* rose petals are now drawn on the ambient canvas (see startPetalFall /
+   the petal branch inside tick()) so their fall is driven by continuous
+   per-frame physics instead of stepped CSS keyframes — this is what
+   makes the motion read as smooth and natural rather than jerky. */
+
+/* brief warm flash behind the finale burst, for extra punch */
+.finale-flash{
+  position:absolute; inset:0; z-index:0;
+  background: radial-gradient(circle at 50% 42%, rgba(227,201,143,.55), transparent 62%);
+  opacity:0; pointer-events:none;
+}
+.finale-flash.is-flashing{ animation: finaleFlash 1.1s ease-out; }
+@keyframes finaleFlash{
+  0%{ opacity:0; }
+  18%{ opacity:1; }
+  100%{ opacity:0; }
+}
+
+/* ============================================================
+   MUSIC TOGGLE
+   ============================================================ */
+#music-toggle{
+  position: fixed; top: 18px; right: 18px; z-index: 80;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,253,246,.14);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,253,246,.28);
+  display:flex; align-items:center; justify-content:center;
+  color: var(--ivory);
+  transition: background .3s ease, transform .3s ease;
+}
+#music-toggle:hover{ background: rgba(255,253,246,.24); transform: scale(1.06); }
+#music-toggle svg{ width:18px; height:18px; }
+#music-toggle .bar{ transform-origin: bottom; transition: transform .3s ease; }
+#music-toggle.is-playing .bar{ animation: eqBar 1s ease-in-out infinite; }
+#music-toggle .bar:nth-child(2){ animation-delay:.15s; }
+#music-toggle .bar:nth-child(3){ animation-delay:.3s; }
+@keyframes eqBar{ 0%,100%{ transform: scaleY(.4);} 50%{ transform: scaleY(1);} }
+
+/* ============================================================
+   MISC — scroll hint, focus states
+   ============================================================ */
+:focus-visible{ outline: 2px solid var(--gold); outline-offset: 3px; }
+
+.scroll-cue{
+  position:absolute; bottom: 3.4vh; left:50%; translate:-50% 0;
+  font-size: .75rem; letter-spacing:.18em; text-transform:uppercase;
+  color: rgba(255,251,243,.4);
+}
+
+@media (max-width: 480px){
+  .polaroid{ width: clamp(120px, 40vw, 160px); }
+  .letter-paper{ max-height: 68vh; }
+}
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     CONFIG NOTE (read me!)
+     - Ảnh: đặt file ảnh vào thư mục images/ và đặt tên đúng như trong
+       mảng PHOTOS bên dưới (1.jpg, 2.jpg, ...). Nếu chưa có ảnh, trang vẫn
+       chạy đẹp với khung placeholder màu kem — chỉ cần thêm ảnh vào sau.
+     - Nhạc nền: đặt file nhạc vào assets/music.mp3 (hoặc đổi MUSIC_SRC).
+     ===================================================================== -->
+
+<canvas id="ambient-canvas"></canvas>
+
+<button id="music-toggle" aria-label="Bật nhạc nền" title="Nhạc nền">
+  <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect class="bar" x="2" y="7" width="2.6" height="7" rx="1.2" fill="currentColor"/>
+    <rect class="bar" x="7.7" y="3" width="2.6" height="11" rx="1.2" fill="currentColor"/>
+    <rect class="bar" x="13.4" y="9" width="2.6" height="5" rx="1.2" fill="currentColor"/>
+  </svg>
+</button>
+<audio id="bg-audio" loop preload="none"></audio>
+
+<!-- ================= SCENE 1 — GIFT BOX ================= -->
+<section id="scene-gift" class="scene is-active">
+  <p class="gift-eyebrow">To Hiếu ♡</p>
+
+  <div class="gift-stage" id="gift-stage">
+    <div class="gift-glow"></div>
+    <div class="gift-ground-shadow"></div>
+    <span class="gift-sparkle s1">✦</span>
+    <span class="gift-sparkle s2">✧</span>
+    <span class="gift-sparkle s3">✦</span>
+    <span class="gift-sparkle s4">♡</span>
+    <div class="gift-box" id="gift-box">
+      <div class="box-base"><div class="ribbon-h"></div></div>
+      <div class="ribbon-v"></div>
+      <div class="ribbon-bow">
+        <svg viewBox="0 0 140 110" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ribbonGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f6e3bd"/>
+              <stop offset="55%" stop-color="#c79a55"/>
+              <stop offset="100%" stop-color="#a97f3f"/>
+            </linearGradient>
+            <radialGradient id="gemGrad" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#fff3d6"/>
+              <stop offset="60%" stop-color="#c79a55"/>
+              <stop offset="100%" stop-color="#8a6530"/>
+            </radialGradient>
+          </defs>
+          <path d="M62 46 L48 102 L62 93 L67 46 Z" fill="url(#ribbonGrad)"/>
+          <path d="M78 46 L92 102 L78 93 L73 46 Z" fill="url(#ribbonGrad)"/>
+          <path d="M70 40 C70 40 34 6 10 18 C-10 28 2 60 70 40 Z" fill="url(#ribbonGrad)"/>
+          <path d="M70 40 C70 40 42 16 22 23 C8 28 14 46 70 40 Z" fill="rgba(58,15,24,.16)"/>
+          <path d="M70 40 C70 40 106 6 130 18 C150 28 138 60 70 40 Z" fill="url(#ribbonGrad)"/>
+          <path d="M70 40 C70 40 98 16 118 23 C132 28 126 46 70 40 Z" fill="rgba(58,15,24,.16)"/>
+          <ellipse cx="70" cy="40" rx="14" ry="10.5" fill="url(#gemGrad)"/>
+          <ellipse cx="65" cy="35.5" rx="4.2" ry="2.4" fill="rgba(255,255,255,.7)"/>
+        </svg>
+      </div>
+      <div class="ribbon-v on-lid"></div>
+      <div class="box-lid" id="box-lid"></div>
+    </div>
+  </div>
+
+  <p class="gift-caption">Một món quà nhỏ cho 365 ngày của chúng ta...</p>
+  <button class="btn-open" id="btn-open">Mở ra nha ♡</button>
+</section>
+
+<!-- ================= SCENE 2 — PHOTOS ================= -->
+<section id="scene-photos" class="scene">
+  <div class="section-head">
+    <h2>365 ngày của chúng ta</h2>
+    <span class="sub">Một năm, rất nhiều kỷ niệm.</span>
+  </div>
+
+  <div class="polaroid-field" id="polaroid-field"></div>
+
+  <button class="btn-next" id="btn-to-letter">Còn một thứ nữa...</button>
+</section>
+
+<!-- photo lightbox -->
+<div id="photo-overlay">
+  <div class="enlarged" id="photo-enlarged"></div>
+</div>
+
+<!-- ================= SCENE 3 — THE LETTER ================= -->
+<section id="scene-letter" class="scene">
+  <div class="envelope-wrap" id="envelope-wrap">
+    <div class="envelope-glow"></div>
+    <div class="envelope">
+      <div class="env-body"></div>
+      <div class="env-bottom-fold"></div>
+      <div class="env-flap"></div>
+      <div class="env-shadow-flap"></div>
+      <div class="env-seal">♡</div>
+    </div>
+    <p class="env-title">For Hiếu ♡</p>
+    <span class="env-sub">Open when you're ready.</span>
+  </div>
+
+  <div class="letter-frame">
+    <svg class="letter-seal-chip" viewBox="0 0 42 38" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="chipGrad" cx="32%" cy="26%" r="75%">
+          <stop offset="0%" stop-color="#a3323f"/>
+          <stop offset="60%" stop-color="#6e2430"/>
+          <stop offset="100%" stop-color="#3a0f18"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="21" cy="20" rx="18" ry="16" fill="url(#chipGrad)"/>
+      <path d="M21 13 C18.5 10.5 14 11.6 14 15.6 C14 19.4 21 25 21 25 C21 25 28 19.4 28 15.6 C28 11.6 23.5 10.5 21 13 Z" fill="none" stroke="#e3c98f" stroke-width="1.1" opacity=".85"/>
+    </svg>
+    <article class="letter-paper" id="letter-paper">
+      <!-- content injected by JS from CONFIG.letter for easy editing -->
+    </article>
+  </div>
+  <p class="letter-scroll-hint" id="letter-scroll-hint">— cuộn xuống để đọc tiếp —</p>
+
+  <button class="btn-next" id="btn-to-finale" style="display:none;">Còn một điều cuối cùng...</button>
+</section>
+
+<!-- ================= SCENE 4 — FINALE ================= -->
+<section id="scene-finale" class="scene">
+  <div class="finale-flash" id="finale-flash"></div>
+  <div class="finale-dot" id="finale-dot"></div>
+
+  <span class="finale-star" id="fs1" style="top:20%; left:18%; font-size:1rem;">✦</span>
+  <span class="finale-star" id="fs2" style="top:30%; right:16%; font-size:.8rem;">✧</span>
+  <span class="finale-star" id="fs3" style="bottom:28%; left:24%; font-size:.9rem;">✦</span>
+  <span class="finale-star" id="fs4" style="bottom:20%; right:22%; font-size:1.1rem;">✧</span>
+  <span class="finale-star" id="fs5" style="top:14%; right:32%; font-size:.7rem;">✦</span>
+
+  <svg class="finale-heart" id="finale-heart" width="92" height="82" viewBox="0 0 92 82" xmlns="http://www.w3.org/2000/svg">
+    <path d="M46 82 C46 82 2 52 2 24 C2 6 16 0 27 0 C36 0 43 6 46 14 C49 6 56 0 65 0 C76 0 90 6 90 24 C90 52 46 82 46 82 Z" fill="url(#heartGrad)"/>
+    <defs>
+      <linearGradient id="heartGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e3c98f"/>
+        <stop offset="100%" stop-color="#c79a55"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <h2 class="finale-title" id="finale-title">HIẾU ♡ VANH</h2>
+  <p class="finale-sub" id="finale-sub">Happy 1st Anniversary</p>
+  <p class="finale-days" id="finale-days">365 ngày rồi đó...</p>
+  <p class="finale-next" id="finale-next">Mình đi tiếp nha? ♡</p>
+  <button class="btn-restart" id="btn-restart">Quay lại từ đầu</button>
+</section>
+
+<script>
+/* ========================================================================
+   CONFIG — chỉnh nội dung / ảnh / nhạc ở đây, không cần đụng vào logic
+   ======================================================================== */
+const CONFIG = {
+  // Ảnh: filename bên trong thư mục images/. Chỉ cần đổi tên file trong
+  // thư mục images/ (giữ đúng tên dưới đây), KHÔNG cần sửa code.
+  // Nếu file chưa tồn tại, hệ thống sẽ tự hiện khung placeholder đẹp.
+  photos: [
+    "images/1.jpg", "images/2.jpg", "images/3.jpg", "images/4.jpg",
+    "images/5.jpg", "images/6.jpg", "images/7.jpg", "images/8.jpg"
+  ],
+
+  // Nhạc nền — đặt file tại assets/music.mp3, hoặc đổi đường dẫn tại đây.
+  musicSrc: "assets/music.mp3",
+
+  // Nội dung lá thư — giữ nguyên văn phong, không chỉnh sửa chính tả.
+  letterParagraphs: [
+    "Uâyyy, vậy là chúng ta quen nhau được một năm rồi đó. Nhanh thiệt chứ, Vanh cảm giác mới ngày nào hai đứa mình còn bắt đầu nói chuyện, tìm hiểu nhau, vậy mà giờ đã đi cùng nhau được một năm rùi.",
+    "Một năm qua hai đứa mình cũm trải qua khá là nhiều chuyện ha. Có lúc vui, có lúc buồn, có lúc giận nhau, có lúc chưa hỉu nhau, có lúc quan điểm khác nhau, nhưng mà sau tất cả thì chúng ta vẫn ở đây, vẫn chọn ở bên nhau. Với Vanh, điều đó thật sự rất đáng quý.",
+    "Năm nay cũm là một sự khởi đầu, mỗi người sẽ bắt đầu một chặng đường mới của riêng mình. Chúng ta sẽ học xa nhau, mỗi người một nơi, và cũm dần bận rộn hơn. Nhưng Vanh vẫn mong dù sau này mỗi đứa có một cuộc sống khác nhau, có những người bạn mới, những môi trường mới và nhiều điều mới mẻ hơn, thì hai đứa mình vẫn sẽ cố gắng giữ nhau ở một vị trí thật đặc biệt. Vẫn kể cho nhau nghe những chuyện nhỏ xíu trong ngày, vẫn nhớ tới nhau giữa những ngày bận rộn và quan trọng nhất là vẫn cùng nhau cố gắng.",
+    "Cảm ơn Hiếu vì một năm vừa qua đã ở bên Vanh, cùng Vanh trải qua rất nhiều chuyện, cả những lúc vui lẫn những lúc hong vui. Cảm ơn vì đã xuất hiện trong cuộc sống của Vanh, khiến nó trở nên phong phú và thành một phần không thể thiếu.",
+    "Chúc mừng kỷ niệm một năm của chúng ta nha ☺️",
+    "Vanh không biết sau này hai đứa mình sẽ đi được với nhau bao lâu, nhưng Vanh hy vọng một năm này sẽ chỉ là chương đầu tiên thôi. Mong rằng sau này khi nhìn lại, chúng ta vẫn có thể nhớ về ngày hôm nay và thấy thật may vì đã gặp nhau, đã chọn nhau và đã cùng nhau cố gắng.",
+    "Mong cho chúng ta không chỉ có một năm này, mà còn thật nhiều năm về sau nữa.",
+    "Thương Hiếu nhìuuuu, mãi iuuu anhh, my love ❤️"
+  ],
+  letterSign: "— Vanh —"
+};
+
+/* ========================================================================
+   SCENE NAVIGATION
+   ======================================================================== */
+const scenes = ["scene-gift", "scene-photos", "scene-letter", "scene-finale"];
+function goToScene(id){
+  const current = document.querySelector(".scene.is-active");
+  const next = document.getElementById(id);
+  if(!current || current === next) return;
+
+  current.classList.remove("is-active", "scene-fade-in");
+  current.classList.add("scene-fade-out");
+
+  setTimeout(() => {
+    current.classList.remove("scene-fade-out");
+    next.classList.add("is-active", "scene-fade-in");
+    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+    onSceneEnter(id);
+  }, 620);
+}
+
+function onSceneEnter(id){
+  if(id === "scene-photos") revealPolaroids();
+  if(id === "scene-letter") revealLetterEnvelope();
+  if(id === "scene-finale") playFinale();
+}
+
+/* ========================================================================
+   SCENE 1 — GIFT BOX
+   ======================================================================== */
+const giftStage = document.getElementById("gift-stage");
+const btnOpen = document.getElementById("btn-open");
+
+btnOpen.addEventListener("click", () => {
+  if(giftStage.classList.contains("is-open")) return;
+  btnOpen.classList.add("is-hidden");
+  giftStage.classList.add("is-shaking");
+
+  setTimeout(() => {
+    giftStage.classList.remove("is-shaking");
+    giftStage.classList.add("is-open");
+    burstParticles({ count: 46, fromCenterOf: giftStage });
+    spawnBalloons(giftStage);
+  }, 560);
+
+  setTimeout(() => goToScene("scene-photos"), 2500);
+});
+
+function spawnBalloons(fromEl){
+  if(reducedMotion) return;
+  const colors = ["#6e2430", "#c79a55", "#f0d9d6", "#fffcf6", "#923643", "#a94d55"];
+  const count = 22;
+  const items = [];
+
+  for(let i=0;i<count;i++){
+    const b = document.createElement("div");
+    b.className = "balloon";
+    const w = 30 + Math.random()*36;
+    b.style.width = w + "px";
+    b.style.height = (w*1.25) + "px";
+    b.style.setProperty("--bColor", colors[i % colors.length]);
+    document.body.appendChild(b);
+
+    items.push({
+      el: b,
+      x0: Math.random() * window.innerWidth,
+      y0: window.innerHeight + 60 + Math.random()*140,
+      // gentle continuous sine sway — smooth at every point, no keyframe kinks
+      swayAmp: 26 + Math.random()*46,
+      swayFreq: 0.35 + Math.random()*0.35,     // oscillations per second
+      swayPhase: Math.random() * Math.PI * 2,
+      drift: (Math.random()-0.5) * 40,          // slow net horizontal wind
+      rotAmp: 4 + Math.random()*5,
+      rotFreq: 0.18 + Math.random()*0.16,
+      riseSpeed: 60 + Math.random()*34,         // px per second, roughly constant like buoyancy
+      startDelay: Math.random() * 0.7,          // seconds, staggered release
+      life: 5.6 + Math.random()*1.6,            // seconds visible — clears before photos fully settle
+      born: null
+    });
+  }
+
+  const t0 = performance.now();
+  function frame(now){
+    const t = (now - t0) / 1000;
+    let anyAlive = false;
+
+    for(const b of items){
+      const bt = t - b.startDelay;
+      if(bt < 0){ anyAlive = true; continue; } // waiting to launch
+      if(bt > b.life){ if(b.el.isConnected) b.el.remove(); continue; }
+      anyAlive = true;
+
+      const progress = bt / b.life;
+      const y = b.y0 - b.riseSpeed * bt - progress*progress*40; // slight ease as it climbs
+      const sway = Math.sin(bt * b.swayFreq * Math.PI * 2 + b.swayPhase) * b.swayAmp;
+      const x = b.x0 + sway + b.drift * progress;
+      const rot = Math.sin(bt * b.rotFreq * Math.PI * 2 + b.swayPhase) * b.rotAmp;
+
+      const fadeIn = Math.min(1, bt / 0.6);
+      const fadeOut = progress > 0.82 ? Math.max(0, 1 - (progress-0.82)/0.18) : 1;
+      const opacity = Math.min(fadeIn, fadeOut);
+
+      b.el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+      b.el.style.opacity = opacity;
+    }
+
+    if(anyAlive) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ========================================================================
+   SCENE 2 — PHOTOS
+   ======================================================================== */
+const polaroidField = document.getElementById("polaroid-field");
+const rotations = [-6, 4, -3, 7, -8, 3, 6, -4, 2, -5]; // designed, not random
+const decoKinds  = ["pin", "tape", "pin", "tape", "tape", "pin", "tape", "pin", "pin", "tape"];
+const tapeGrads  = [
+  "repeating-linear-gradient(52deg, #e9c9a0 0 7px, #f3ddb8 7px 14px)",
+  "repeating-linear-gradient(52deg, #d99aa1 0 7px, #eec3c7 7px 14px)",
+  "repeating-linear-gradient(52deg, #b98a55 0 7px, #d9b98a 7px 14px)",
+  "repeating-linear-gradient(52deg, #ecd8c8 0 7px, #f8ece0 7px 14px)"
+];
+const tapeRots   = [-9, 6, -5, 8, -7, 5, -10, 7, -6, 9];
+const pinRots    = [-6, 5, -3, 7, -8, 4, -5, 6, -4, 5];
+let polaroidsBuilt = false;
+let polaroidsRevealed = false;
+
+function buildPolaroids(){
+  CONFIG.photos.forEach((src, i) => {
+    const card = document.createElement("div");
+    card.className = "polaroid";
+    card.style.setProperty("--rot", rotations[i % rotations.length] + "deg");
+    card.style.setProperty("--i", i);
+
+    const frame = document.createElement("div");
+    frame.className = "frame";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    img.loading = "lazy";
+    img.onerror = () => {
+      img.remove();
+      const ph = document.createElement("div");
+      ph.className = "placeholder-art";
+      ph.textContent = "♡";
+      frame.appendChild(ph);
+    };
+
+    frame.appendChild(img);
+    card.appendChild(frame);
+
+    // decorative washi tape or pushpin, alternating per photo
+    const kind = decoKinds[i % decoKinds.length];
+    if(kind === "tape"){
+      const tape = document.createElement("div");
+      tape.className = "deco-tape";
+      tape.style.setProperty("--tape-rot", tapeRots[i % tapeRots.length] + "deg");
+      tape.style.setProperty("--tape-grad", tapeGrads[i % tapeGrads.length]);
+      card.appendChild(tape);
+    } else {
+      const pin = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      pin.setAttribute("class", "deco-pin");
+      pin.setAttribute("viewBox", "0 0 26 34");
+      pin.style.setProperty("--pin-rot", pinRots[i % pinRots.length] + "deg");
+      pin.innerHTML = `
+        <defs>
+          <radialGradient id="pinHead${i}" cx="35%" cy="28%" r="75%">
+            <stop offset="0%" stop-color="#fff3d6"/>
+            <stop offset="55%" stop-color="#c79a55"/>
+            <stop offset="100%" stop-color="#8a6530"/>
+          </radialGradient>
+        </defs>
+        <path d="M13 19 L13 32" stroke="#8a6530" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="13" cy="11" r="9.5" fill="url(#pinHead${i})"/>
+        <ellipse cx="10" cy="7.5" rx="2.8" ry="1.8" fill="rgba(255,255,255,.65)"/>`;
+      card.appendChild(pin);
+    }
+
+    card.addEventListener("click", (e) => openPhoto(src, frame, e));
+    polaroidField.appendChild(card);
+  });
+  polaroidsBuilt = true;
+}
+
+function revealPolaroids(){
+  if(!polaroidsBuilt) buildPolaroids();
+  if(polaroidsRevealed) return;
+  polaroidsRevealed = true;
+  requestAnimationFrame(() => polaroidField.classList.add("is-visible"));
+  const lastDelay = (CONFIG.photos.length - 1) * 160 + 700;
+  setTimeout(() => document.getElementById("btn-to-letter").classList.add("is-visible"), lastDelay);
+}
+
+const overlay = document.getElementById("photo-overlay");
+const overlayContent = document.getElementById("photo-enlarged");
+
+function openPhoto(src, frameEl, evt){
+  const isPhoto = !!frameEl.querySelector("img");
+  const rect = frameEl.getBoundingClientRect();
+  const x = evt.clientX, y = evt.clientY;
+
+  const lens = document.createElement("div");
+  lens.className = "lens";
+  lens.style.left = x + "px";
+  lens.style.top = y + "px";
+  if(isPhoto){
+    const relX = ((x - rect.left) / rect.width) * 100;
+    const relY = ((y - rect.top) / rect.height) * 100;
+    lens.style.backgroundImage = `url(${src})`;
+    lens.style.backgroundPosition = relX + "% " + relY + "%";
+  } else {
+    lens.textContent = "♡";
+  }
+  document.body.appendChild(lens);
+
+  const finish = () => {
+    lens.remove();
+    overlayContent.innerHTML = frameEl.innerHTML;
+    overlay.classList.add("is-active");
+  };
+
+  if(reducedMotion){
+    finish();
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    lens.classList.add("is-growing");
+    lens.style.left = "50%";
+    lens.style.top = "50%";
+    lens.style.width = "220px";
+    lens.style.height = "220px";
+  });
+  setTimeout(finish, 480);
+}
+overlay.addEventListener("click", (e) => {
+  if(e.target === overlay) overlay.classList.remove("is-active");
+});
+
+document.getElementById("btn-to-letter").addEventListener("click", () => goToScene("scene-letter"));
+
+/* ========================================================================
+   SCENE 3 — THE LETTER
+   ======================================================================== */
+const letterPaper = document.getElementById("letter-paper");
+let letterBuilt = false;
+
+const FLOURISH_SVG = `<svg viewBox="0 0 140 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <path d="M0 10 H55" stroke="currentColor" stroke-width="1"/>
+  <path d="M140 10 H85" stroke="currentColor" stroke-width="1"/>
+  <path d="M70 3 C67 3 64.5 5.5 65.5 8.8 C61.5 11.6 60.6 17 64 19.4 C66 20.8 68.6 20.2 70 17.6 C71.4 20.2 74 20.8 76 19.4 C79.4 17 78.5 11.6 74.5 8.8 C75.5 5.5 73 3 70 3 Z" fill="currentColor"/>
+</svg>`;
+
+function buildLetter(){
+  const topFlourish = document.createElement("div");
+  topFlourish.className = "letter-flourish";
+  topFlourish.innerHTML = FLOURISH_SVG;
+  letterPaper.appendChild(topFlourish);
+
+  CONFIG.letterParagraphs.forEach((text, i) => {
+    const p = document.createElement("p");
+    if(i === 0) p.className = "first-para";
+    p.textContent = text;
+    letterPaper.appendChild(p);
+  });
+
+  const bottomFlourish = document.createElement("div");
+  bottomFlourish.className = "letter-flourish bottom";
+  bottomFlourish.innerHTML = FLOURISH_SVG;
+  letterPaper.appendChild(bottomFlourish);
+
+  const sign = document.createElement("p");
+  sign.className = "sign";
+  sign.textContent = CONFIG.letterSign;
+  letterPaper.appendChild(sign);
+  letterBuilt = true;
+}
+
+function revealLetterEnvelope(){
+  if(!letterBuilt) buildLetter();
+}
+
+const envelopeWrap = document.getElementById("envelope-wrap");
+envelopeWrap.addEventListener("click", () => {
+  if(envelopeWrap.classList.contains("is-open")) return;
+  envelopeWrap.classList.add("is-open");
+
+  setTimeout(() => {
+    envelopeWrap.style.transition = "opacity .6s ease, transform .6s ease";
+    envelopeWrap.style.opacity = "0";
+    envelopeWrap.style.transform = "translateY(-16px) scale(.92)";
+  }, 700);
+
+  setTimeout(() => {
+    envelopeWrap.style.display = "none";
+    letterPaper.classList.add("is-visible");
+    document.getElementById("btn-to-finale").style.display = "inline-block";
+    requestAnimationFrame(() => document.getElementById("btn-to-finale").classList.add("is-visible"));
+  }, 1250);
+});
+
+document.getElementById("letter-paper").addEventListener("scroll", function(){
+  const hint = document.getElementById("letter-scroll-hint");
+  if(this.scrollTop > 20) hint.style.opacity = "0";
+});
+
+document.getElementById("btn-to-finale").addEventListener("click", () => goToScene("scene-finale"));
+
+/* ========================================================================
+   SCENE 4 — FINALE
+   ======================================================================== */
+let finalePlayed = false;
+function playFinale(){
+  if(finalePlayed) return;
+  finalePlayed = true;
+
+  ["fs1","fs2","fs3","fs4","fs5"].forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add("is-visible"), 200 + i*140);
+  });
+  setTimeout(() => document.getElementById("finale-heart").classList.add("is-visible"), 700);
+
+  // big multi-point firework show
+  setTimeout(() => grandFireworkShow(), 1400);
+
+  // rose petals drift down once the sky show settles
+  setTimeout(() => startPetalFall(), 3700);
+
+  // text reveals after the petals begin falling
+  setTimeout(() => document.getElementById("finale-title").classList.add("is-visible"), 4300);
+  setTimeout(() => document.getElementById("finale-sub").classList.add("is-visible"), 4900);
+  setTimeout(() => document.getElementById("finale-days").classList.add("is-visible"), 5400);
+  setTimeout(() => document.getElementById("finale-next").classList.add("is-visible"), 6900);
+  setTimeout(() => document.getElementById("btn-restart").classList.add("is-visible"), 7600);
+}
+
+function resetExperience(){
+  // Scene 1
+  giftStage.classList.remove("is-open");
+  btnOpen.classList.remove("is-hidden");
+
+  // Scene 2
+  polaroidField.classList.remove("is-visible");
+  polaroidsRevealed = false;
+  document.getElementById("btn-to-letter").classList.remove("is-visible");
+  overlay.classList.remove("is-active");
+
+  // Scene 3
+  envelopeWrap.classList.remove("is-open");
+  envelopeWrap.style.display = "";
+  envelopeWrap.style.opacity = "";
+  envelopeWrap.style.transform = "";
+  letterPaper.classList.remove("is-visible");
+  const btnFinale = document.getElementById("btn-to-finale");
+  btnFinale.style.display = "none";
+  btnFinale.classList.remove("is-visible");
+  document.getElementById("letter-scroll-hint").style.opacity = "";
+  letterPaper.scrollTop = 0;
+
+  // Scene 4
+  finalePlayed = false;
+  ["finale-heart","finale-title","finale-sub","finale-days","finale-next","btn-restart",
+   "fs1","fs2","fs3","fs4","fs5"].forEach(id => document.getElementById(id).classList.remove("is-visible"));
+  document.getElementById("finale-flash").classList.remove("is-flashing");
+  document.querySelectorAll(".balloon").forEach(el => el.remove());
+  petals = [];
+}
+
+document.getElementById("btn-restart").addEventListener("click", () => {
+  resetExperience();
+  goToScene("scene-gift");
+});
+
+/* ========================================================================
+   PARTICLE ENGINE — ambient dust/stars + burst + heart firework
+   Lightweight canvas system, no external libraries.
+   ======================================================================== */
+const canvas = document.getElementById("ambient-canvas");
+const ctx = canvas.getContext("2d");
+let particles = [];
+let dpr = Math.min(window.devicePixelRatio || 1, 2);
+const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function resizeCanvas(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+function spawnAmbient(){
+  const count = window.innerWidth < 600 ? 30 : 54;
+  for(let i=0;i<count;i++){
+    const isHeart = Math.random() < 0.16;
+    particles.push({
+      x: Math.random()*window.innerWidth,
+      y: Math.random()*window.innerHeight,
+      r: isHeart ? (Math.random()*1.6 + 2.2) : (Math.random()*1.6 + .5),
+      vy: -(Math.random()*.14 + .04),
+      vx: (Math.random()-.5)*.08,
+      a: Math.random()*.5 + .15,
+      twinkle: Math.random()*Math.PI*2,
+      kind: "dust",
+      shape: isHeart ? "heart" : "dot"
+    });
+  }
+}
+if(!reducedMotion) spawnAmbient();
+
+function burstParticles({count, fromCenterOf}){
+  if(reducedMotion) return;
+  const rect = fromCenterOf.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height*0.55;
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = Math.random()*2.4 + .6;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed - 1.4,
+      r: Math.random()*3 + 1.5,
+      a: 1,
+      life: 0,
+      maxLife: 90 + Math.random()*40,
+      kind: Math.random() > .55 ? "heart" : "spark",
+      hue: Math.random() > .5 ? "#e3c98f" : "#f0d9d6"
+    });
+  }
+}
+
+function fireworkBurst(xRatio = 0.5, yRatio = 0.4, opts = {}){
+  if(reducedMotion) return;
+  const cx = window.innerWidth * xRatio;
+  const cy = window.innerHeight * yRatio;
+  const rings = opts.rings || 3;
+  const n = opts.count || 46;
+  const power = opts.power || 1;
+  for(let ring=0; ring<rings; ring++){
+    setTimeout(() => {
+      for(let i=0;i<n;i++){
+        const angle = (Math.PI*2*i)/n + ring + Math.random()*0.15;
+        const speed = (3.2 + ring*.9 + Math.random()*1.4) * power;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(angle)*speed,
+          vy: Math.sin(angle)*speed,
+          r: Math.random()*2.8 + 1.6,
+          a: 1,
+          life: 0,
+          maxLife: 120 + Math.random()*50,
+          gravity: .014,
+          kind: Math.random() > .58 ? "heart" : "spark",
+          hue: ["#e3c98f","#c79a55","#f0d9d6","#ffffff","#a94d55"][Math.floor(Math.random()*5)]
+        });
+      }
+    }, ring*220);
+  }
+}
+
+/* a grand, chaotic multi-point show: several bursts across the sky,
+   each with its own warm flash, building to a bigger finale burst */
+function grandFireworkShow(){
+  if(reducedMotion) return;
+  const flash = document.getElementById("finale-flash");
+  const flashPop = () => {
+    flash.classList.remove("is-flashing");
+    void flash.offsetWidth;
+    flash.classList.add("is-flashing");
+  };
+  const bursts = [
+    { x:.5,  y:.4,  delay:0,    rings:3, count:46, power:1   },
+    { x:.24, y:.32, delay:420,  rings:2, count:34, power:.9  },
+    { x:.76, y:.3,  delay:640,  rings:2, count:34, power:.9  },
+    { x:.36, y:.5,  delay:1050, rings:2, count:30, power:.85 },
+    { x:.64, y:.48, delay:1220, rings:2, count:30, power:.85 },
+    { x:.5,  y:.34, delay:1650, rings:4, count:58, power:1.25 }
+  ];
+  bursts.forEach(b => {
+    setTimeout(() => {
+      flashPop();
+      fireworkBurst(b.x, b.y, { rings: b.rings, count: b.count, power: b.power });
+    }, b.delay);
+  });
+}
+
+/* rose petals drifting down after the fireworks settle. Petals live in the
+   `petals` array and are updated + drawn every frame inside tick(), using
+   continuous sine-based sway and a rotation-linked scaleX so they read as
+   naturally tumbling rather than snapping between fixed poses. */
+const petalPalettes = [
+  ["#f6dbe0", "#c9636f"],
+  ["#f0c3c9", "#a94d55"],
+  ["#e9a9ae", "#8a2c39"],
+  ["#fbe6e2", "#c98a90"],
+  ["#e7b9bb", "#6e2430"]
+];
+let petals = [];
+
+function startPetalFall(){
+  if(reducedMotion) return;
+  const count = 42;
+  for(let i=0;i<count;i++){
+    setTimeout(() => {
+      const isFar = Math.random() < 0.4;
+      const [light, deep] = petalPalettes[i % petalPalettes.length];
+      petals.push({
+        x: Math.random() * window.innerWidth,
+        y: -30 - Math.random()*140,
+        size: isFar ? (9 + Math.random()*7) : (15 + Math.random()*13),
+        vy: isFar ? (0.9 + Math.random()*0.5) : (1.5 + Math.random()*0.8),
+        vyTarget: isFar ? (1.1 + Math.random()*0.6) : (1.9 + Math.random()*0.9),
+        swayAmp: 22 + Math.random()*44,
+        swayFreq: 0.006 + Math.random()*0.01,
+        swayPhase: Math.random()*Math.PI*2,
+        drift: (Math.random()-0.5) * 0.35,
+        rot: Math.random()*360,
+        rotSpeed: (Math.random()-0.5) * 3.2,
+        light, deep,
+        alphaTarget: isFar ? 0.5 + Math.random()*0.2 : 0.82 + Math.random()*0.16,
+        age: 0,
+        fadeInFrames: 40
+      });
+    }, i*110);
+  }
+}
+
+function drawPetal(p, alpha){
+  const s = p.size / 24;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot * Math.PI/180);
+  // foreshortening tied continuously to rotation angle — this is what makes
+  // the tumble look smooth and physical instead of stepping between poses
+  const scaleX = 0.32 + 0.68 * Math.abs(Math.cos(p.rot * Math.PI/180));
+  ctx.scale(scaleX, 1);
+  ctx.beginPath();
+  ctx.moveTo(0, -13*s);
+  ctx.bezierCurveTo(-2.5*s,-15*s, -5.5*s,-13.4*s, -4*s,-9.4*s);
+  ctx.bezierCurveTo(-8.8*s,-5*s, -10.6*s,3.4*s, -6.8*s,9.4*s);
+  ctx.bezierCurveTo(-4.4*s,13.2*s, -1*s,15*s, 0,15*s);
+  ctx.bezierCurveTo(1*s,15*s, 4.4*s,13.2*s, 6.8*s,9.4*s);
+  ctx.bezierCurveTo(10.6*s,3.4*s, 8.8*s,-5*s, 4*s,-9.4*s);
+  ctx.bezierCurveTo(5.5*s,-13.4*s, 2.5*s,-15*s, 0,-13*s);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0,-15*s,0,15*s);
+  grad.addColorStop(0, p.light);
+  grad.addColorStop(1, p.deep);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0,-10*s);
+  ctx.quadraticCurveTo(0.8*s, 0, 0, 12*s);
+  ctx.strokeStyle = "rgba(255,255,255,.3)";
+  ctx.lineWidth = Math.max(0.4, p.size*0.02);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function updateAndDrawPetals(){
+  const h = window.innerHeight, w = window.innerWidth;
+  petals = petals.filter(p => {
+    p.age++;
+    // ease toward terminal fall speed, like air resistance settling
+    p.vy += (p.vyTarget - p.vy) * 0.02;
+    p.y += p.vy;
+    p.swayPhase += p.swayFreq;
+    p.x += Math.sin(p.swayPhase) * (p.swayAmp * p.swayFreq) + p.drift;
+    p.rot += p.rotSpeed + Math.sin(p.swayPhase*0.6) * 0.6;
+
+    if(p.x < -30) p.x = w + 30;
+    if(p.x > w + 30) p.x = -30;
+
+    const fadeIn = Math.min(1, p.age / p.fadeInFrames);
+    const alpha = fadeIn * p.alphaTarget;
+    drawPetal(p, alpha);
+
+    return p.y < h + 40;
+  });
+}
+
+function drawHeart(x, y, size, color, alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.scale(size/10, size/10);
+  ctx.beginPath();
+  ctx.moveTo(0, 3);
+  ctx.bezierCurveTo(0, 0, -5, -3, -5, -6);
+  ctx.bezierCurveTo(-5, -9, -1, -9, 0, -5);
+  ctx.bezierCurveTo(1, -9, 5, -9, 5, -6);
+  ctx.bezierCurveTo(5, -3, 0, 0, 0, 3);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+function tick(){
+  ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+  if(petals.length) updateAndDrawPetals();
+
+  particles = particles.filter(p => {
+    if(p.kind === "dust"){
+      p.y += p.vy; p.x += p.vx; p.twinkle += 0.02;
+      if(p.y < -10) p.y = window.innerHeight + 10;
+      const alpha = p.a * (0.55 + 0.45*Math.sin(p.twinkle));
+      if(p.shape === "heart"){
+        drawHeart(p.x, p.y, p.r*2.6, "#f0d9d6", alpha);
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(227,201,143,${alpha})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      return true;
+    } else {
+      p.life += 1;
+      p.vy += p.gravity || 0.01;
+      p.x += p.vx; p.y += p.vy;
+      const t = p.life / p.maxLife;
+      const alpha = Math.max(0, 1 - t);
+      if(p.kind === "heart"){
+        drawHeart(p.x, p.y, p.r*3, p.hue, alpha);
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = hexToRgba(p.hue || "#e3c98f", alpha);
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      return p.life < p.maxLife;
+    }
+  });
+
+  requestAnimationFrame(tick);
+}
+function hexToRgba(hex, a){
+  const v = hex.replace("#","");
+  const r = parseInt(v.substring(0,2),16), g = parseInt(v.substring(2,4),16), b = parseInt(v.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+requestAnimationFrame(tick);
+
+/* ========================================================================
+   MUSIC TOGGLE
+   ======================================================================== */
+const audio = document.getElementById("bg-audio");
+const musicBtn = document.getElementById("music-toggle");
+audio.src = CONFIG.musicSrc;
+let musicOn = false;
+
+musicBtn.addEventListener("click", () => {
+  if(!musicOn){
+    audio.play().then(() => {
+      musicOn = true;
+      musicBtn.classList.add("is-playing");
+      musicBtn.setAttribute("aria-label", "Tắt nhạc nền");
+    }).catch(() => {
+      musicBtn.title = "Chưa có file nhạc — thêm assets/music.mp3 nhé";
+    });
+  } else {
+    audio.pause();
+    musicOn = false;
+    musicBtn.classList.remove("is-playing");
+    musicBtn.setAttribute("aria-label", "Bật nhạc nền");
+  }
+});
+</script>
+</body>
+</html>
