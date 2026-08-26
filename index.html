@@ -265,9 +265,11 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   80%{ transform: translateX(3px) rotateZ(.8deg); }
 }
 
-/* balloons released when the gift box opens */
+/* balloons released when the gift box opens — position driven by JS/rAF
+   for a smooth, continuous sway (see spawnBalloons) rather than stepped
+   CSS keyframes */
 .balloon{
-  position: fixed; left:0; top:0; z-index: 65;
+  position: fixed; left: 0; top: 0; z-index: 65;
   border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
   background: var(--bColor);
   box-shadow:
@@ -283,12 +285,10 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   border-left: 6px solid transparent; border-right: 6px solid transparent;
   border-top: 9px solid var(--bColor);
 }
-.balloon::after{ /* string, drawn with a gentle natural curve */
-  content:''; position:absolute; left:50%; bottom:-50px; translate:-50% 0;
-  width: 14px; height: 50px;
-  border: none;
-  border-left: 1.4px solid rgba(60,44,38,.38);
-  border-radius: 0 0 0 14px;
+.balloon::after{ /* string */
+  content:''; position:absolute; left:50%; bottom:-52px; translate:-50% 0;
+  width: 1.4px; height: 48px;
+  background: rgba(60,44,38,.4);
 }
 
 /* ------------------------------------------------------------
@@ -320,7 +320,6 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
 }
 .polaroid{
   --rot: 0deg;
-  position: relative;
   width: clamp(140px, 20vw, 200px);
   background: var(--ivory);
   padding: 10px 10px 34px;
@@ -331,42 +330,6 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   cursor: pointer;
   transition: transform .5s var(--ease-out), box-shadow .35s ease, z-index 0s;
   will-change: transform;
-}
-
-/* scrapbook decorations — washi tape or a little pushpin per photo */
-.polaroid-decor{
-  position: absolute;
-  z-index: 5;
-  pointer-events: none;
-}
-.polaroid-decor.tape{
-  top: -13px; left: 50%;
-  height: 25px;
-  background:
-    repeating-linear-gradient(52deg, rgba(255,255,255,.35) 0 3px, transparent 3px 8px),
-    linear-gradient(180deg, rgba(255,255,255,.4), transparent 60%),
-    var(--tapeColor, rgba(227,201,143,.85));
-  opacity: .88;
-  box-shadow: 0 3px 7px rgba(58,15,24,.2);
-  transform: translateX(-50%) rotate(var(--tapeRot, -4deg));
-  mix-blend-mode: normal;
-}
-.polaroid-decor.tape::after{ /* torn short edges */
-  content:''; position:absolute; inset:0;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
-}
-.polaroid-decor.pin{
-  top: -9px; left: 50%;
-  width: 15px; height: 15px;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fff3d9, var(--pinColor, #8c3b45) 55%, #40060f 100%);
-  box-shadow: 0 5px 7px -1px rgba(0,0,0,.4), inset 0 -2px 3px rgba(0,0,0,.3);
-}
-.polaroid-decor.pin::after{ /* soft shadow where the pin meets the paper */
-  content:''; position:absolute; left:50%; top:100%; translate:-50% 3px;
-  width:7px; height:2.5px; border-radius:50%;
-  background: rgba(58,15,24,.28); filter: blur(1px);
 }
 .polaroid .frame{ animation: frameIdleFloat 4.6s ease-in-out infinite; animation-delay: calc(var(--i) * .35s); }
 @keyframes frameIdleFloat{
@@ -402,6 +365,31 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   background:
     radial-gradient(circle at 30% 25%, rgba(199,154,85,.35), transparent 55%),
     linear-gradient(155deg, #f6e3d8, var(--blush));
+}
+
+/* decorative washi tape / pushpin on each polaroid */
+.polaroid{ overflow: visible; }
+.deco-tape{
+  position:absolute; top:-13px; left:50%;
+  width: 68px; height: 25px;
+  transform: translateX(-50%) rotate(var(--tape-rot, -6deg));
+  background: var(--tape-grad);
+  opacity: .82;
+  clip-path: polygon(3% 6%,97% 0%,100% 22%,96% 45%,100% 68%,97% 100%,4% 96%,0% 74%,3% 48%,0% 26%);
+  box-shadow: 0 4px 7px -2px rgba(58,15,24,.28);
+  z-index: 3;
+}
+.deco-tape::after{ /* soft sheen so the tape reads as semi-translucent */
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
+  mix-blend-mode: soft-light;
+}
+.deco-pin{
+  position:absolute; top:-15px; left:50%;
+  transform: translateX(-50%) rotate(var(--pin-rot, 0deg));
+  width: 26px; height: 34px;
+  z-index: 3;
+  filter: drop-shadow(0 5px 5px rgba(58,15,24,.3));
 }
 
 /* enlarge overlay */
@@ -584,81 +572,88 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
 .envelope-wrap.is-open .env-shadow-flap{ opacity:1; }
 .envelope-wrap.is-open .env-seal{ opacity:0; transform: translate(-50%,-50%) scale(.4); }
 
-.letter-paper{
+.letter-frame{
   position: relative;
   width: min(88vw, 560px);
-  max-height: 74vh;
-  overflow-y: auto;
   margin: 4vh auto 0;
-  padding: clamp(40px,6vw,62px) clamp(30px,6vw,58px) clamp(34px,5vw,50px);
-  background:
-    radial-gradient(ellipse 90% 60% at 12% 0%, rgba(199,154,85,.12), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 100% 100%, rgba(110,36,48,.07), transparent 58%),
-    linear-gradient(170deg, #fffdf8 0%, #fdf3e4 55%, #f8ecd6 100%);
+  transform: rotate(-.5deg);
+}
+.letter-paper{
+  position: relative;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: clamp(38px,6vw,64px) clamp(28px,6vw,54px) clamp(30px,5vw,46px);
+  background: linear-gradient(175deg, #fffefb 0%, #fdf7ea 55%, #f9f0dc 100%);
   box-shadow:
-    0 34px 80px -26px rgba(58,15,24,.42),
-    inset 0 0 0 1px rgba(199,154,85,.22),
-    inset 0 0 0 7px rgba(255,253,247,.9),
-    inset 0 0 0 8px rgba(199,154,85,.3),
-    inset 0 0 44px rgba(199,154,85,.07);
-  border-radius: 5px;
-  opacity: 0; transform: translateY(30px) scale(.97);
+    0 36px 70px -26px rgba(58,15,24,.42),
+    0 3px 10px -4px rgba(58,15,24,.15);
+  border-radius: 3px;
+  opacity: 0; transform: translateY(26px) scale(.97);
   transition: opacity .9s var(--ease-out), transform .9s var(--ease-out);
 }
-.letter-paper::before{ /* fine paper grain */
+/* soft watercolour blooms in the corners, instead of harsh grain */
+.letter-paper::before{
   content:'';
   position:absolute; inset:0; border-radius: inherit;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.43 0 0 0 0 0.2 0 0 0 0 0.16 0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  opacity:.5; mix-blend-mode: multiply; pointer-events:none;
+  background:
+    radial-gradient(ellipse 46% 30% at 4% 2%,  rgba(199,154,85,.14), transparent 70%),
+    radial-gradient(ellipse 40% 28% at 98% 6%, rgba(110,36,48,.07),  transparent 70%),
+    radial-gradient(ellipse 50% 34% at 96% 98%,rgba(199,154,85,.10), transparent 70%),
+    radial-gradient(ellipse 40% 26% at 2% 96%, rgba(110,36,48,.06),  transparent 70%);
+  pointer-events:none;
 }
-.letter-paper::after{ /* soft corner vignette for depth */
-  content:''; position:absolute; inset:0; border-radius: inherit;
-  box-shadow: inset 0 0 70px rgba(58,15,24,.07);
+/* slim gilded frame, inset from the edge like a keepsake card */
+.letter-paper::after{
+  content:''; position:absolute; inset: 12px; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(199,154,85,.38);
   pointer-events:none;
 }
 .letter-paper.is-visible{ opacity:1; transform: translateY(0) scale(1); }
-.letter-paper .corner{
-  position:absolute; width:34px; height:34px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cpath d='M4 4 C22 4 32 14 32 32 M4 4 C4 22 14 32 32 32 M9 9 C18 9 23 14 23 23' stroke='%23c79a55' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='4' cy='4' r='2' fill='%23c79a55'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-size: contain;
-  opacity: .55; pointer-events:none;
+.letter-paper::-webkit-scrollbar{ width: 5px; }
+.letter-paper::-webkit-scrollbar-thumb{ background: rgba(199,154,85,.45); border-radius: 4px; }
+.letter-paper::-webkit-scrollbar-track{ background: transparent; }
+
+/* tiny wax seal resting on top of the paper, half-overlapping the edge */
+.letter-seal-chip{
+  position:absolute; top:-20px; left:50%; translate:-50% 0;
+  width: 42px; height: 38px; z-index: 2;
+  filter: drop-shadow(0 6px 8px rgba(58,15,24,.35));
 }
-.letter-paper .corner.tl{ top: 12px; left: 12px; }
-.letter-paper .corner.tr{ top: 12px; right: 12px; transform: scaleX(-1); }
-.letter-paper .heading-seal{
-  display:flex; align-items:center; justify-content:center; gap: 16px;
-  font-size: 1.15rem; color: var(--gold); text-align:center;
-  margin-bottom: 1.3em;
+
+.letter-flourish{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin: 6px 0 1.6em;
+  color: var(--gold);
 }
-.letter-paper .heading-seal::before,
-.letter-paper .heading-seal::after{
-  content:''; flex: 1 1 auto; max-width: 64px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
-}
+.letter-flourish svg{ width: 84px; height:auto; }
+.letter-flourish.bottom{ margin: 1.8em 0 0; }
+
 .letter-paper p{
   position: relative;
-  font-size: clamp(.98rem, 2vw, 1.08rem);
+  font-size: clamp(.98rem, 2vw, 1.07rem);
   line-height: 1.95;
   color: var(--ink);
-  margin-bottom: 1.2em;
+  margin-bottom: 1.15em;
+  letter-spacing: .002em;
 }
-.letter-paper p:first-of-type::first-letter{
+.letter-paper p.first-para::first-letter{
   font-family: var(--serif);
+  font-size: 2.6em;
   font-weight: 600;
-  font-size: 2.5em;
-  line-height: .78;
-  float: left;
-  padding: .04em .1em 0 0;
   color: var(--wine);
+  float: left;
+  line-height: .78;
+  padding: .06em .07em 0 0;
 }
 .letter-paper .sign{
   font-family: var(--hand);
   font-size: 1.7rem; color: var(--wine);
-  text-align: right; margin-top: .6em;
+  text-align: right; margin-top: .2em;
   position: relative;
 }
 .letter-scroll-hint{
-  text-align:center; font-size:.8rem; color: var(--ink-soft); opacity:.6; margin-top: 1vh;
+  text-align:center; font-size:.8rem; color: var(--ink-soft); opacity:.6; margin-top: 1.4vh;
+  transition: opacity .4s ease;
 }
 
 /* ------------------------------------------------------------
@@ -755,15 +750,10 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   transform: translateY(-2px);
 }
 
-/* rose petals falling after the fireworks — swaying, layered fall for realism */
-.petal{
-  position: fixed; left:0; top:0; z-index: 62;
-  pointer-events: none;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-.petal svg{ display:block; filter: drop-shadow(0 4px 6px rgba(58,15,24,.22)); }
-.petal.is-far svg{ filter: blur(.6px) drop-shadow(0 3px 4px rgba(58,15,24,.15)); }
+/* rose petals are now drawn on the ambient canvas (see startPetalFall /
+   the petal branch inside tick()) so their fall is driven by continuous
+   per-frame physics instead of stepped CSS keyframes — this is what
+   makes the motion read as smooth and natural rather than jerky. */
 
 /* brief warm flash behind the finale burst, for extra punch */
 .finale-flash{
@@ -829,6 +819,7 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
 </button>
 <audio id="bg-audio" loop preload="none"></audio>
 
+<!-- ================= SCENE 1 — GIFT BOX ================= -->
 <section id="scene-gift" class="scene is-active">
   <p class="gift-eyebrow">To Hiếu ♡</p>
 
@@ -875,6 +866,7 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   <button class="btn-open" id="btn-open">Mở ra nha ♡</button>
 </section>
 
+<!-- ================= SCENE 2 — PHOTOS ================= -->
 <section id="scene-photos" class="scene">
   <div class="section-head">
     <h2>365 ngày của chúng ta</h2>
@@ -886,10 +878,12 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
   <button class="btn-next" id="btn-to-letter">Còn một thứ nữa...</button>
 </section>
 
+<!-- photo lightbox -->
 <div id="photo-overlay">
   <div class="enlarged" id="photo-enlarged"></div>
 </div>
 
+<!-- ================= SCENE 3 — THE LETTER ================= -->
 <section id="scene-letter" class="scene">
   <div class="envelope-wrap" id="envelope-wrap">
     <div class="envelope-glow"></div>
@@ -904,13 +898,28 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
     <span class="env-sub">Open when you're ready.</span>
   </div>
 
-  <article class="letter-paper" id="letter-paper">
-  </article>
+  <div class="letter-frame">
+    <svg class="letter-seal-chip" viewBox="0 0 42 38" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="chipGrad" cx="32%" cy="26%" r="75%">
+          <stop offset="0%" stop-color="#a3323f"/>
+          <stop offset="60%" stop-color="#6e2430"/>
+          <stop offset="100%" stop-color="#3a0f18"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="21" cy="20" rx="18" ry="16" fill="url(#chipGrad)"/>
+      <path d="M21 13 C18.5 10.5 14 11.6 14 15.6 C14 19.4 21 25 21 25 C21 25 28 19.4 28 15.6 C28 11.6 23.5 10.5 21 13 Z" fill="none" stroke="#e3c98f" stroke-width="1.1" opacity=".85"/>
+    </svg>
+    <article class="letter-paper" id="letter-paper">
+      <!-- content injected by JS from CONFIG.letter for easy editing -->
+    </article>
+  </div>
   <p class="letter-scroll-hint" id="letter-scroll-hint">— cuộn xuống để đọc tiếp —</p>
 
   <button class="btn-next" id="btn-to-finale" style="display:none;">Còn một điều cuối cùng...</button>
 </section>
 
+<!-- ================= SCENE 4 — FINALE ================= -->
 <section id="scene-finale" class="scene">
   <div class="finale-flash" id="finale-flash"></div>
   <div class="finale-dot" id="finale-dot"></div>
@@ -939,12 +948,23 @@ button{ font-family: var(--body); border:none; background:none; cursor:pointer; 
 </section>
 
 <script>
+/* ========================================================================
+   CONFIG — chỉnh nội dung / ảnh / nhạc ở đây, không cần đụng vào logic
+   ======================================================================== */
 const CONFIG = {
+  // Ảnh: filename bên trong thư mục images/. Chỉ cần đổi tên file trong
+  // thư mục images/ (giữ đúng tên dưới đây), KHÔNG cần sửa code.
+  // Nếu file chưa tồn tại, hệ thống sẽ tự hiện khung placeholder đẹp.
   photos: [
     "images/1.jpg", "images/2.jpg", "images/3.jpg", "images/4.jpg",
-    "images/5.jpg", "images/6.jpg", "images/7.jpg", "images/8.jpg"
+    "images/5.jpg", "images/6.jpg", "images/7.jpg", "images/8.jpg",
+    "images/9.jpg", "images/10.jpg", "images/11.jpg"
   ],
+
+  // Nhạc nền — đặt file tại assets/music.mp3, hoặc đổi đường dẫn tại đây.
   musicSrc: "assets/music.mp3",
+
+  // Nội dung lá thư — giữ nguyên văn phong, không chỉnh sửa chính tả.
   letterParagraphs: [
     "Uâyyy, vậy là chúng ta quen nhau được một năm rồi đó. Nhanh thiệt chứ, Vanh cảm giác mới ngày nào hai đứa mình còn bắt đầu nói chuyện, tìm hiểu nhau, vậy mà giờ đã đi cùng nhau được một năm rùi.",
     "Một năm qua hai đứa mình cũm trải qua khá là nhiều chuyện ha. Có lúc vui, có lúc buồn, có lúc giận nhau, có lúc chưa hỉu nhau, có lúc quan điểm khác nhau, nhưng mà sau tất cả thì chúng ta vẫn ở đây, vẫn chọn ở bên nhau. Với Vanh, điều đó thật sự rất đáng quý.",
@@ -958,6 +978,9 @@ const CONFIG = {
   letterSign: "— Vanh —"
 };
 
+/* ========================================================================
+   SCENE NAVIGATION
+   ======================================================================== */
 const scenes = ["scene-gift", "scene-photos", "scene-letter", "scene-finale"];
 function goToScene(id){
   const current = document.querySelector(".scene.is-active");
@@ -981,6 +1004,9 @@ function onSceneEnter(id){
   if(id === "scene-finale") playFinale();
 }
 
+/* ========================================================================
+   SCENE 1 — GIFT BOX
+   ======================================================================== */
 const giftStage = document.getElementById("gift-stage");
 const btnOpen = document.getElementById("btn-open");
 
@@ -1003,72 +1029,88 @@ function spawnBalloons(fromEl){
   if(reducedMotion) return;
   const colors = ["#6e2430", "#c79a55", "#f0d9d6", "#fffcf6", "#923643", "#a94d55"];
   const count = 22;
-  const now = performance.now();
+  const items = [];
+
   for(let i=0;i<count;i++){
-    const el = document.createElement("div");
-    el.className = "balloon";
+    const b = document.createElement("div");
+    b.className = "balloon";
     const w = 30 + Math.random()*36;
-    el.style.width = w + "px";
-    el.style.height = (w*1.25) + "px";
-    el.style.setProperty("--bColor", colors[i % colors.length]);
-    document.body.appendChild(el);
+    b.style.width = w + "px";
+    b.style.height = (w*1.25) + "px";
+    b.style.setProperty("--bColor", colors[i % colors.length]);
+    document.body.appendChild(b);
 
-    const startX = Math.random() * window.innerWidth;
-    const startY = window.innerHeight + 60 + Math.random()*160;
-    const riseSpeed = 34 + Math.random()*26; // px/s — gentle, varied climb
-    const duration = ((startY + 260) / riseSpeed) * 1000;
-
-    floatingObjects.push({
-      type: "balloon", el,
-      startX, startY, riseSpeed,
-      drift: Math.random()*20 - 10,               // slow lateral drift, like a breeze
-      swayAmp: 16 + Math.random()*24,
-      swayFreq: 0.10 + Math.random()*0.14,          // slow, wide sway = believable buoyancy
-      swayPhase: Math.random()*Math.PI*2,
-      bobAmp: 4 + Math.random()*4,
-      bobFreq: 0.5 + Math.random()*0.4,             // small fast bob, like a real balloon bouncing on its string
-      bobPhase: Math.random()*Math.PI*2,
-      rotAmp: 2.5 + Math.random()*3.5,
-      rotFreq: 0.09 + Math.random()*0.1,
-      rotPhase: Math.random()*Math.PI*2,
-      born: now + Math.random()*1400,               // staggered release, not all at once
-      duration
+    items.push({
+      el: b,
+      x0: Math.random() * window.innerWidth,
+      y0: window.innerHeight + 60 + Math.random()*140,
+      // gentle continuous sine sway — smooth at every point, no keyframe kinks
+      swayAmp: 26 + Math.random()*46,
+      swayFreq: 0.35 + Math.random()*0.35,     // oscillations per second
+      swayPhase: Math.random() * Math.PI * 2,
+      drift: (Math.random()-0.5) * 40,          // slow net horizontal wind
+      rotAmp: 4 + Math.random()*5,
+      rotFreq: 0.18 + Math.random()*0.16,
+      riseSpeed: 60 + Math.random()*34,         // px per second, roughly constant like buoyancy
+      startDelay: Math.random() * 0.7,          // seconds, staggered release
+      life: 5.6 + Math.random()*1.6,            // seconds visible — clears before photos fully settle
+      born: null
     });
   }
-  ensureFloatLoop();
+
+  const t0 = performance.now();
+  function frame(now){
+    const t = (now - t0) / 1000;
+    let anyAlive = false;
+
+    for(const b of items){
+      const bt = t - b.startDelay;
+      if(bt < 0){ anyAlive = true; continue; } // waiting to launch
+      if(bt > b.life){ if(b.el.isConnected) b.el.remove(); continue; }
+      anyAlive = true;
+
+      const progress = bt / b.life;
+      const y = b.y0 - b.riseSpeed * bt - progress*progress*40; // slight ease as it climbs
+      const sway = Math.sin(bt * b.swayFreq * Math.PI * 2 + b.swayPhase) * b.swayAmp;
+      const x = b.x0 + sway + b.drift * progress;
+      const rot = Math.sin(bt * b.rotFreq * Math.PI * 2 + b.swayPhase) * b.rotAmp;
+
+      const fadeIn = Math.min(1, bt / 0.6);
+      const fadeOut = progress > 0.82 ? Math.max(0, 1 - (progress-0.82)/0.18) : 1;
+      const opacity = Math.min(fadeIn, fadeOut);
+
+      b.el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+      b.el.style.opacity = opacity;
+    }
+
+    if(anyAlive) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
+/* ========================================================================
+   SCENE 2 — PHOTOS
+   ======================================================================== */
 const polaroidField = document.getElementById("polaroid-field");
-const rotations = [-6, 4, -3, 7, -8, 3, 6, -4, 2, -5];
+const rotations = [-6, 4, -3, 7, -8, 3, 6, -4, 2, -5, -7]; // designed, not random
+const decoKinds  = ["pin", "tape", "pin", "tape", "tape", "pin", "tape", "pin", "pin", "tape", "pin"];
+const tapeGrads  = [
+  "repeating-linear-gradient(52deg, #e9c9a0 0 7px, #f3ddb8 7px 14px)",
+  "repeating-linear-gradient(52deg, #d99aa1 0 7px, #eec3c7 7px 14px)",
+  "repeating-linear-gradient(52deg, #b98a55 0 7px, #d9b98a 7px 14px)",
+  "repeating-linear-gradient(52deg, #ecd8c8 0 7px, #f8ece0 7px 14px)"
+];
+const tapeRots   = [-9, 6, -5, 8, -7, 5, -10, 7, -6, 9, -8];
+const pinRots    = [-6, 5, -3, 7, -8, 4, -5, 6, -4, 5, -7];
 let polaroidsBuilt = false;
 let polaroidsRevealed = false;
 
-const tapeColors = [
-  "rgba(240,217,214,.88)", // blush
-  "rgba(227,201,143,.82)", // gold
-  "rgba(255,252,246,.85)", // ivory
-  "rgba(169,77,85,.5)",    // wine, translucent
-  "rgba(199,154,85,.6)"
-];
 function buildPolaroids(){
   CONFIG.photos.forEach((src, i) => {
     const card = document.createElement("div");
     card.className = "polaroid";
     card.style.setProperty("--rot", rotations[i % rotations.length] + "deg");
     card.style.setProperty("--i", i);
-
-    const decor = document.createElement("div");
-    const useTape = Math.random() < 0.62;
-    if(useTape){
-      decor.className = "polaroid-decor tape";
-      decor.style.setProperty("--tapeColor", tapeColors[i % tapeColors.length]);
-      decor.style.setProperty("--tapeRot", (Math.random()*16 - 8) + "deg");
-      decor.style.width = (54 + Math.random()*28) + "px";
-    } else {
-      decor.className = "polaroid-decor pin";
-      decor.style.setProperty("--pinColor", i % 2 === 0 ? "#8c3b45" : "#a9843f");
-    }
-    card.appendChild(decor);
 
     const frame = document.createElement("div");
     frame.className = "frame";
@@ -1087,6 +1129,34 @@ function buildPolaroids(){
 
     frame.appendChild(img);
     card.appendChild(frame);
+
+    // decorative washi tape or pushpin, alternating per photo
+    const kind = decoKinds[i % decoKinds.length];
+    if(kind === "tape"){
+      const tape = document.createElement("div");
+      tape.className = "deco-tape";
+      tape.style.setProperty("--tape-rot", tapeRots[i % tapeRots.length] + "deg");
+      tape.style.setProperty("--tape-grad", tapeGrads[i % tapeGrads.length]);
+      card.appendChild(tape);
+    } else {
+      const pin = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      pin.setAttribute("class", "deco-pin");
+      pin.setAttribute("viewBox", "0 0 26 34");
+      pin.style.setProperty("--pin-rot", pinRots[i % pinRots.length] + "deg");
+      pin.innerHTML = `
+        <defs>
+          <radialGradient id="pinHead${i}" cx="35%" cy="28%" r="75%">
+            <stop offset="0%" stop-color="#fff3d6"/>
+            <stop offset="55%" stop-color="#c79a55"/>
+            <stop offset="100%" stop-color="#8a6530"/>
+          </radialGradient>
+        </defs>
+        <path d="M13 19 L13 32" stroke="#8a6530" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="13" cy="11" r="9.5" fill="url(#pinHead${i})"/>
+        <ellipse cx="10" cy="7.5" rx="2.8" ry="1.8" fill="rgba(255,255,255,.65)"/>`;
+      card.appendChild(pin);
+    }
+
     card.addEventListener("click", (e) => openPhoto(src, frame, e));
     polaroidField.appendChild(card);
   });
@@ -1150,26 +1220,36 @@ overlay.addEventListener("click", (e) => {
 
 document.getElementById("btn-to-letter").addEventListener("click", () => goToScene("scene-letter"));
 
+/* ========================================================================
+   SCENE 3 — THE LETTER
+   ======================================================================== */
 const letterPaper = document.getElementById("letter-paper");
 let letterBuilt = false;
 
-function buildLetter(){
-  const cornerTL = document.createElement("span");
-  cornerTL.className = "corner tl";
-  const cornerTR = document.createElement("span");
-  cornerTR.className = "corner tr";
-  letterPaper.appendChild(cornerTL);
-  letterPaper.appendChild(cornerTR);
+const FLOURISH_SVG = `<svg viewBox="0 0 140 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <path d="M0 10 H55" stroke="currentColor" stroke-width="1"/>
+  <path d="M140 10 H85" stroke="currentColor" stroke-width="1"/>
+  <path d="M70 3 C67 3 64.5 5.5 65.5 8.8 C61.5 11.6 60.6 17 64 19.4 C66 20.8 68.6 20.2 70 17.6 C71.4 20.2 74 20.8 76 19.4 C79.4 17 78.5 11.6 74.5 8.8 C75.5 5.5 73 3 70 3 Z" fill="currentColor"/>
+</svg>`;
 
-  const seal = document.createElement("span");
-  seal.className = "heading-seal";
-  seal.textContent = "♡";
-  letterPaper.appendChild(seal);
-  CONFIG.letterParagraphs.forEach(text => {
+function buildLetter(){
+  const topFlourish = document.createElement("div");
+  topFlourish.className = "letter-flourish";
+  topFlourish.innerHTML = FLOURISH_SVG;
+  letterPaper.appendChild(topFlourish);
+
+  CONFIG.letterParagraphs.forEach((text, i) => {
     const p = document.createElement("p");
+    if(i === 0) p.className = "first-para";
     p.textContent = text;
     letterPaper.appendChild(p);
   });
+
+  const bottomFlourish = document.createElement("div");
+  bottomFlourish.className = "letter-flourish bottom";
+  bottomFlourish.innerHTML = FLOURISH_SVG;
+  letterPaper.appendChild(bottomFlourish);
+
   const sign = document.createElement("p");
   sign.className = "sign";
   sign.textContent = CONFIG.letterSign;
@@ -1207,6 +1287,9 @@ document.getElementById("letter-paper").addEventListener("scroll", function(){
 
 document.getElementById("btn-to-finale").addEventListener("click", () => goToScene("scene-finale"));
 
+/* ========================================================================
+   SCENE 4 — FINALE
+   ======================================================================== */
 let finalePlayed = false;
 function playFinale(){
   if(finalePlayed) return;
@@ -1217,10 +1300,13 @@ function playFinale(){
   });
   setTimeout(() => document.getElementById("finale-heart").classList.add("is-visible"), 700);
 
+  // big multi-point firework show
   setTimeout(() => grandFireworkShow(), 1400);
 
+  // rose petals drift down once the sky show settles
   setTimeout(() => startPetalFall(), 3700);
 
+  // text reveals after the petals begin falling
   setTimeout(() => document.getElementById("finale-title").classList.add("is-visible"), 4300);
   setTimeout(() => document.getElementById("finale-sub").classList.add("is-visible"), 4900);
   setTimeout(() => document.getElementById("finale-days").classList.add("is-visible"), 5400);
@@ -1229,14 +1315,17 @@ function playFinale(){
 }
 
 function resetExperience(){
+  // Scene 1
   giftStage.classList.remove("is-open");
   btnOpen.classList.remove("is-hidden");
 
+  // Scene 2
   polaroidField.classList.remove("is-visible");
   polaroidsRevealed = false;
   document.getElementById("btn-to-letter").classList.remove("is-visible");
   overlay.classList.remove("is-active");
 
+  // Scene 3
   envelopeWrap.classList.remove("is-open");
   envelopeWrap.style.display = "";
   envelopeWrap.style.opacity = "";
@@ -1248,12 +1337,13 @@ function resetExperience(){
   document.getElementById("letter-scroll-hint").style.opacity = "";
   letterPaper.scrollTop = 0;
 
+  // Scene 4
   finalePlayed = false;
   ["finale-heart","finale-title","finale-sub","finale-days","finale-next","btn-restart",
    "fs1","fs2","fs3","fs4","fs5"].forEach(id => document.getElementById(id).classList.remove("is-visible"));
   document.getElementById("finale-flash").classList.remove("is-flashing");
-  document.querySelectorAll(".balloon, .petal").forEach(el => el.remove());
-  floatingObjects.length = 0;
+  document.querySelectorAll(".balloon").forEach(el => el.remove());
+  petals = [];
 }
 
 document.getElementById("btn-restart").addEventListener("click", () => {
@@ -1261,6 +1351,10 @@ document.getElementById("btn-restart").addEventListener("click", () => {
   goToScene("scene-gift");
 });
 
+/* ========================================================================
+   PARTICLE ENGINE — ambient dust/stars + burst + heart firework
+   Lightweight canvas system, no external libraries.
+   ======================================================================== */
 const canvas = document.getElementById("ambient-canvas");
 const ctx = canvas.getContext("2d");
 let particles = [];
@@ -1348,6 +1442,8 @@ function fireworkBurst(xRatio = 0.5, yRatio = 0.4, opts = {}){
   }
 }
 
+/* a grand, chaotic multi-point show: several bursts across the sky,
+   each with its own warm flash, building to a bigger finale burst */
 function grandFireworkShow(){
   if(reducedMotion) return;
   const flash = document.getElementById("finale-flash");
@@ -1372,111 +1468,100 @@ function grandFireworkShow(){
   });
 }
 
+/* rose petals drifting down after the fireworks settle. Petals live in the
+   `petals` array and are updated + drawn every frame inside tick(), using
+   continuous sine-based sway and a rotation-linked scaleX so they read as
+   naturally tumbling rather than snapping between fixed poses. */
+const petalPalettes = [
+  ["#f6dbe0", "#c9636f"],
+  ["#f0c3c9", "#a94d55"],
+  ["#e9a9ae", "#8a2c39"],
+  ["#fbe6e2", "#c98a90"],
+  ["#e7b9bb", "#6e2430"]
+];
+let petals = [];
+
 function startPetalFall(){
   if(reducedMotion) return;
-  const palettes = [
-    ["#f6dbe0", "#c9636f"],
-    ["#f0c3c9", "#a94d55"],
-    ["#e9a9ae", "#8a2c39"],
-    ["#fbe6e2", "#c98a90"],
-    ["#e7b9bb", "#6e2430"]
-  ];
   const count = 42;
-  const now = performance.now();
   for(let i=0;i<count;i++){
-    const isFar = Math.random() < 0.4;
-    const size = isFar ? (9 + Math.random()*8) : (16 + Math.random()*15);
-    const [light, deep] = palettes[i % palettes.length];
-    const gid = "pg" + i + "_" + Math.floor(Math.random()*100000);
-
-    const petal = document.createElement("div");
-    petal.className = "petal" + (isFar ? " is-far" : "");
-    petal.innerHTML = `
-      <svg width="${size}" height="${size*1.28}" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="${gid}" x1="0" y1="0" x2="0.3" y2="1">
-            <stop offset="0%" stop-color="${light}"/>
-            <stop offset="100%" stop-color="${deep}"/>
-          </linearGradient>
-        </defs>
-        <path d="M12 2 C9.5 0 6.5 1.6 8 5.6 C3.2 10 1.4 18.4 5.2 24.4 C7.6 28.2 11 30 12 30 C13 30 16.4 28.2 18.8 24.4 C22.6 18.4 20.8 10 16 5.6 C17.5 1.6 14.5 0 12 2 Z" fill="url(#${gid})"/>
-        <path d="M12 4 C11 11 11 20 12 27" stroke="${deep}" stroke-width="0.5" stroke-linecap="round" opacity="0.35" fill="none"/>
-      </svg>`;
-    document.body.appendChild(petal);
-
-    const startX = Math.random() * window.innerWidth;
-    const startY = -40 - Math.random()*160;
-    const fallSpeed = isFar ? (13 + Math.random()*9) : (20 + Math.random()*15); // px/s, far = slower (depth)
-    const duration = ((window.innerHeight + 220 - startY) / fallSpeed) * 1000;
-
-    floatingObjects.push({
-      type: "petal", el: petal,
-      startX, startY, fallSpeed,
-      swayAmp: 28 + Math.random()*52,
-      swayFreq: 0.11 + Math.random()*0.2,           // slow side-to-side drift like real petals
-      swayPhase: Math.random()*Math.PI*2,
-      rotSpeed: Math.random()*60 - 30,               // slow continuous tumble
-      wobbleAmp: 8 + Math.random()*10,
-      wobbleFreq: 0.35 + Math.random()*0.45,
-      wobblePhase: Math.random()*Math.PI*2,
-      flutterFreq: 0.45 + Math.random()*0.55,        // faster flutter = catching air, feels alive
-      flutterPhase: Math.random()*Math.PI*2,
-      baseOpacity: (isFar ? 0.45 : 0.85) + Math.random()*0.12,
-      born: now + i*70 + Math.random()*200,          // staggered, not a single wave
-      duration
-    });
+    setTimeout(() => {
+      const isFar = Math.random() < 0.4;
+      const [light, deep] = petalPalettes[i % petalPalettes.length];
+      petals.push({
+        x: Math.random() * window.innerWidth,
+        y: -30 - Math.random()*140,
+        size: isFar ? (9 + Math.random()*7) : (15 + Math.random()*13),
+        vy: isFar ? (0.9 + Math.random()*0.5) : (1.5 + Math.random()*0.8),
+        vyTarget: isFar ? (1.1 + Math.random()*0.6) : (1.9 + Math.random()*0.9),
+        swayAmp: 22 + Math.random()*44,
+        swayFreq: 0.006 + Math.random()*0.01,
+        swayPhase: Math.random()*Math.PI*2,
+        drift: (Math.random()-0.5) * 0.35,
+        rot: Math.random()*360,
+        rotSpeed: (Math.random()-0.5) * 3.2,
+        light, deep,
+        alphaTarget: isFar ? 0.5 + Math.random()*0.2 : 0.82 + Math.random()*0.16,
+        age: 0,
+        fadeInFrames: 40
+      });
+    }, i*110);
   }
-  ensureFloatLoop();
 }
 
-/* ========================================================================
-   FLOATING OBJECTS ENGINE — shared, time-based physics for balloons & petals
-   Position is recomputed from elapsed time each frame (not accumulated),
-   so motion stays smooth and consistent even if a frame is dropped.
-   ======================================================================== */
-let floatingObjects = [];
-let floatLoopRunning = false;
+function drawPetal(p, alpha){
+  const s = p.size / 24;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot * Math.PI/180);
+  // foreshortening tied continuously to rotation angle — this is what makes
+  // the tumble look smooth and physical instead of stepping between poses
+  const scaleX = 0.32 + 0.68 * Math.abs(Math.cos(p.rot * Math.PI/180));
+  ctx.scale(scaleX, 1);
+  ctx.beginPath();
+  ctx.moveTo(0, -13*s);
+  ctx.bezierCurveTo(-2.5*s,-15*s, -5.5*s,-13.4*s, -4*s,-9.4*s);
+  ctx.bezierCurveTo(-8.8*s,-5*s, -10.6*s,3.4*s, -6.8*s,9.4*s);
+  ctx.bezierCurveTo(-4.4*s,13.2*s, -1*s,15*s, 0,15*s);
+  ctx.bezierCurveTo(1*s,15*s, 4.4*s,13.2*s, 6.8*s,9.4*s);
+  ctx.bezierCurveTo(10.6*s,3.4*s, 8.8*s,-5*s, 4*s,-9.4*s);
+  ctx.bezierCurveTo(5.5*s,-13.4*s, 2.5*s,-15*s, 0,-13*s);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0,-15*s,0,15*s);
+  grad.addColorStop(0, p.light);
+  grad.addColorStop(1, p.deep);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0,-10*s);
+  ctx.quadraticCurveTo(0.8*s, 0, 0, 12*s);
+  ctx.strokeStyle = "rgba(255,255,255,.3)";
+  ctx.lineWidth = Math.max(0.4, p.size*0.02);
+  ctx.stroke();
+  ctx.restore();
+}
 
-function floatTick(now){
-  floatingObjects = floatingObjects.filter(obj => {
-    const t = now - obj.born;
-    if(t < 0) return true; // staggered start, not yet released
-    if(t > obj.duration){ obj.el.remove(); return false; }
+function updateAndDrawPetals(){
+  const h = window.innerHeight, w = window.innerWidth;
+  petals = petals.filter(p => {
+    p.age++;
+    // ease toward terminal fall speed, like air resistance settling
+    p.vy += (p.vyTarget - p.vy) * 0.02;
+    p.y += p.vy;
+    p.swayPhase += p.swayFreq;
+    p.x += Math.sin(p.swayPhase) * (p.swayAmp * p.swayFreq) + p.drift;
+    p.rot += p.rotSpeed + Math.sin(p.swayPhase*0.6) * 0.6;
 
-    const s = t / 1000;
-    let x, y, rot, scaleX = 1, opacity;
+    if(p.x < -30) p.x = w + 30;
+    if(p.x > w + 30) p.x = -30;
 
-    if(obj.type === "balloon"){
-      x = obj.startX + obj.drift*s + Math.sin(s*obj.swayFreq*Math.PI*2 + obj.swayPhase) * obj.swayAmp;
-      y = obj.startY - obj.riseSpeed*s + Math.sin(s*obj.bobFreq*Math.PI*2 + obj.bobPhase) * obj.bobAmp;
-      rot = Math.sin(s*obj.rotFreq*Math.PI*2 + obj.rotPhase) * obj.rotAmp;
-      opacity = Math.min(t/500, (obj.duration - t)/800, 1);
-    } else {
-      x = obj.startX + Math.sin(s*obj.swayFreq*Math.PI*2 + obj.swayPhase) * obj.swayAmp;
-      y = obj.startY + obj.fallSpeed*s;
-      rot = obj.rotSpeed*s + Math.sin(s*obj.wobbleFreq*Math.PI*2 + obj.wobblePhase) * obj.wobbleAmp;
-      scaleX = 0.62 + 0.38*Math.sin(s*obj.flutterFreq*Math.PI*2 + obj.flutterPhase);
-      opacity = Math.min(t/400, (obj.duration - t)/650, 1) * obj.baseOpacity;
-    }
+    const fadeIn = Math.min(1, p.age / p.fadeInFrames);
+    const alpha = fadeIn * p.alphaTarget;
+    drawPetal(p, alpha);
 
-    opacity = Math.max(0, Math.min(1, opacity));
-    obj.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg) scaleX(${scaleX})`;
-    obj.el.style.opacity = opacity;
-    return true;
+    return p.y < h + 40;
   });
-
-  if(floatingObjects.length > 0){
-    requestAnimationFrame(floatTick);
-  } else {
-    floatLoopRunning = false;
-  }
-}
-
-function ensureFloatLoop(){
-  if(!floatLoopRunning){
-    floatLoopRunning = true;
-    requestAnimationFrame(floatTick);
-  }
 }
 
 function drawHeart(x, y, size, color, alpha){
@@ -1498,6 +1583,8 @@ function drawHeart(x, y, size, color, alpha){
 
 function tick(){
   ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+  if(petals.length) updateAndDrawPetals();
 
   particles = particles.filter(p => {
     if(p.kind === "dust"){
@@ -1540,6 +1627,9 @@ function hexToRgba(hex, a){
 }
 requestAnimationFrame(tick);
 
+/* ========================================================================
+   MUSIC TOGGLE
+   ======================================================================== */
 const audio = document.getElementById("bg-audio");
 const musicBtn = document.getElementById("music-toggle");
 audio.src = CONFIG.musicSrc;
